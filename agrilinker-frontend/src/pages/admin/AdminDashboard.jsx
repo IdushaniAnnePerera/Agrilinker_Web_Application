@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { FaBoxOpen, FaSeedling, FaShoppingCart, FaUsers } from "react-icons/fa";
 import api from "../../api/api";
 
 const defaultDashboard = {
@@ -20,6 +21,54 @@ export default function AdminDashboard() {
   const [fertilizers, setFertilizers] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const productChartData = useMemo(() => {
+    const items = [...products]
+      .filter((product) => Number(product.quantity) > 0)
+      .sort((a, b) => (Number(b.quantity) || 0) - (Number(a.quantity) || 0));
+    const topItems = items.slice(0, 4).map((item) => ({
+      name: item.name,
+      value: Number(item.quantity) || 0,
+    }));
+    const otherValue = items
+      .slice(4)
+      .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    if (otherValue > 0) {
+      topItems.push({ name: "Other", value: otherValue });
+    }
+    return topItems;
+  }, [products]);
+
+  const fertilizerChartData = useMemo(() => {
+    const items = [...fertilizers]
+      .filter((fertilizer) => Number(fertilizer.stock) > 0)
+      .sort((a, b) => (Number(b.stock) || 0) - (Number(a.stock) || 0));
+    const topItems = items.slice(0, 4).map((item) => ({
+      name: item.name,
+      value: Number(item.stock) || 0,
+    }));
+    const otherValue = items
+      .slice(4)
+      .reduce((sum, item) => sum + (Number(item.stock) || 0), 0);
+    if (otherValue > 0) {
+      topItems.push({ name: "Other", value: otherValue });
+    }
+    return topItems;
+  }, [fertilizers]);
+
+  const statCards = useMemo(
+    () => [
+      { label: "Total Users", value: dashboard.totalUsers, icon: FaUsers },
+      { label: "Orders", value: dashboard.totalOrders, icon: FaShoppingCart },
+      { label: "Products", value: dashboard.totalProducts, icon: FaBoxOpen },
+      {
+        label: "Fertilizers",
+        value: dashboard.totalFertilizers,
+        icon: FaSeedling,
+      },
+    ],
+    [dashboard],
+  );
 
   const roleSummary = useMemo(
     () => [
@@ -85,22 +134,23 @@ export default function AdminDashboard() {
         ) : null}
 
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: "Total Users", value: dashboard.totalUsers },
-            { label: "Orders", value: dashboard.totalOrders },
-            { label: "Products", value: dashboard.totalProducts },
-            { label: "Fertilizers", value: dashboard.totalFertilizers },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
-            >
-              <p className="text-sm text-gray-500">{stat.label}</p>
-              <p className="mt-2 text-3xl font-semibold text-gray-900">
-                {loading ? "—" : stat.value}
-              </p>
-            </div>
-          ))}
+          {statCards.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={stat.label}
+                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+              >
+                <p className="flex items-center gap-2 text-sm text-gray-500">
+                  <Icon className="h-4 w-4 text-green-600" aria-hidden />
+                  {stat.label}
+                </p>
+                <p className="mt-2 text-3xl font-semibold text-gray-900">
+                  {loading ? "—" : stat.value}
+                </p>
+              </div>
+            );
+          })}
         </section>
 
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
@@ -215,7 +265,109 @@ export default function AdminDashboard() {
             </div>
           </div>
         </section>
+
+        <section className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Product selling mix
+            </h2>
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <PieChart data={productChartData} />
+              <ChartLegend data={productChartData} emptyLabel="No products yet." />
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Fertilizer selling mix
+            </h2>
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <PieChart data={fertilizerChartData} />
+              <ChartLegend
+                data={fertilizerChartData}
+                emptyLabel="No fertilizers yet."
+              />
+            </div>
+          </div>
+        </section>
       </div>
     </div>
+  );
+}
+
+function PieChart({ data }) {
+  const colors = [
+    "#16a34a",
+    "#22c55e",
+    "#4ade80",
+    "#86efac",
+    "#bbf7d0",
+  ];
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const radius = 46;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+
+  if (total === 0) {
+    return (
+      <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gray-50 text-xs text-gray-400">
+        —
+      </div>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 120 120"
+      className="h-28 w-28 -rotate-90"
+      aria-hidden
+    >
+      {data.map((item, index) => {
+        const value = item.value;
+        const strokeLength = (value / total) * circumference;
+        const segment = (
+          <circle
+            key={item.name}
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke={colors[index % colors.length]}
+            strokeWidth="18"
+            strokeDasharray={`${strokeLength} ${circumference - strokeLength}`}
+            strokeDashoffset={-offset}
+          />
+        );
+        offset += strokeLength;
+        return segment;
+      })}
+    </svg>
+  );
+}
+
+function ChartLegend({ data, emptyLabel }) {
+  const colors = [
+    "#16a34a",
+    "#22c55e",
+    "#4ade80",
+    "#86efac",
+    "#bbf7d0",
+  ];
+  if (data.length === 0) {
+    return <p className="text-sm text-gray-500">{emptyLabel}</p>;
+  }
+  return (
+    <ul className="space-y-2 text-sm text-gray-600">
+      {data.map((item, index) => (
+        <li key={item.name} className="flex items-center gap-2">
+          <span
+            className="h-3 w-3 rounded-full"
+            style={{ backgroundColor: colors[index % colors.length] }}
+          />
+          <span className="flex-1">{item.name}</span>
+          <span className="text-gray-500">{item.value}</span>
+        </li>
+      ))}
+    </ul>
   );
 }

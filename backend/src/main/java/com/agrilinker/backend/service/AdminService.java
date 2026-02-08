@@ -3,13 +3,17 @@ package com.agrilinker.backend.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.agrilinker.backend.dto.AdminDashboardResponse;
 import com.agrilinker.backend.dto.AdminFertilizerResponse;
 import com.agrilinker.backend.dto.AdminOrderResponse;
 import com.agrilinker.backend.dto.AdminProductResponse;
 import com.agrilinker.backend.dto.AdminUserResponse;
+import com.agrilinker.backend.dto.ChangePasswordRequest;
 import com.agrilinker.backend.model.Fertilizer;
 import com.agrilinker.backend.model.Order;
 import com.agrilinker.backend.model.Product;
@@ -33,6 +37,9 @@ public class AdminService {
 
     @Autowired
     private FertilizerRepository fertilizerRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public AdminDashboardResponse getDashboard() {
         List<User> users = userRepository.findAll();
@@ -90,6 +97,19 @@ public class AdminService {
         return fertilizerRepository.findAll().stream()
                 .map(this::mapFertilizer)
                 .toList();
+    }
+
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
     }
 
     private long countRole(List<User> users, User.UserRole role) {
