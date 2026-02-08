@@ -1,9 +1,12 @@
 package com.agrilinker.backend.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +15,7 @@ import com.agrilinker.backend.dto.AdminFertilizerResponse;
 import com.agrilinker.backend.dto.AdminOrderResponse;
 import com.agrilinker.backend.dto.AdminProductResponse;
 import com.agrilinker.backend.dto.AdminUserResponse;
+import com.agrilinker.backend.dto.ChangePasswordRequest;
 import com.agrilinker.backend.service.AdminService;
 
 @RestController
@@ -44,5 +48,10 @@ public class AdminController {
     @GetMapping("/fertilizers")
     public List<AdminFertilizerResponse> getFertilizers() {
         return adminService.getFertilizers();
+    }
+
+    @PostMapping("/change-password")
+    public void changePassword(@RequestBody ChangePasswordRequest request, Principal principal) {
+        adminService.changePassword(principal.getName(), request);
     }
 }
