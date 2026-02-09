@@ -31,6 +31,7 @@ export default function UserMenu() {
             {/* Dropdown */}
             {open && (
                 <div className="user-dropdown">
+                    <button onClick={() => navigate("/profile")}>Profile</button>
                     {isAdmin && (
                         <button onClick={() => navigate("/admin")}>
                             Admin Dashboard
