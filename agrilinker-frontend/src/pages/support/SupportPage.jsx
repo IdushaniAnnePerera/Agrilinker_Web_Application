@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import api from "../../api/api";
-import { useAuth } from "../../context/AuthContext";
 
 const complaintOptions = [
   "Wrong product",
@@ -19,28 +18,16 @@ const initialFormState = {
   complaintType: "",
   resolutionPreference: "",
   contactMethod: "",
-  contactValue: "",
   description: "",
 };
 
 export default function SupportPage() {
-  const { user } = useAuth();
   const [formState, setFormState] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const suggestedContact = useMemo(() => {
-    if (!user) return "";
-    return formState.contactMethod === "Phone"
-      ? user.telephone || ""
-      : user.email || "";
-  }, [formState.contactMethod, user]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormState((prev) => ({
-      ...prev,
-      [name]: value,
-      ...(name === "contactMethod" ? { contactValue: "" } : null),
-    }));
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (event) => {
@@ -52,7 +39,6 @@ export default function SupportPage() {
         complaintType: formState.complaintType,
         resolutionPreference: formState.resolutionPreference,
         contactMethod: formState.contactMethod,
-        contactValue: formState.contactValue.trim() || suggestedContact,
         description: formState.description.trim(),
       };
 
@@ -62,11 +48,7 @@ export default function SupportPage() {
       setFormState(initialFormState);
     } catch (error) {
       console.error(error);
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.statusText ||
-        "Unable to submit your complaint right now.";
-      toast.error(message);
+      toast.error("Unable to submit your complaint right now.");
     } finally {
       setIsSubmitting(false);
     }
@@ -158,28 +140,6 @@ export default function SupportPage() {
                   </option>
                 ))}
               </select>
-            </label>
-
-            <label className="space-y-2 text-sm font-medium text-gray-700">
-              Contact detail
-              <input
-                type="text"
-                name="contactValue"
-                value={formState.contactValue || suggestedContact}
-                onChange={(event) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    contactValue: event.target.value,
-                  }))
-                }
-                placeholder={
-                  formState.contactMethod === "Phone"
-                    ? "Enter a phone number"
-                    : "Enter an email address"
-                }
-                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
-                required
-              />
             </label>
 
             <label className="space-y-2 text-sm font-medium text-gray-700">

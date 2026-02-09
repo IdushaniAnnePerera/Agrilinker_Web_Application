@@ -1,55 +1,8 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
-import api from "../../api/api";
 import AdminSidebar from "./AdminSidebar";
 
 export default function AdminSettings() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [formState, setFormState] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!formState.currentPassword || !formState.newPassword) {
-      toast.error("Please fill in all password fields.");
-      return;
-    }
-    if (formState.newPassword !== formState.confirmPassword) {
-      toast.error("New password and confirmation do not match.");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      await api.put("/api/admin/password", {
-        currentPassword: formState.currentPassword,
-        newPassword: formState.newPassword,
-      });
-      toast.success("Password updated successfully.");
-      setFormState({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-    } catch (error) {
-      console.error(error);
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.statusText ||
-        "Unable to update password.";
-      toast.error(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,57 +22,9 @@ export default function AdminSettings() {
             </p>
           </header>
           <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Change password
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Update the password for your admin account.
+            <p className="text-sm text-gray-500">
+              Settings controls will be available here soon.
             </p>
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <label className="space-y-2 text-sm font-medium text-gray-700">
-                Current password
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={formState.currentPassword}
-                  onChange={handleChange}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2 text-sm font-medium text-gray-700">
-                New password
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={formState.newPassword}
-                  onChange={handleChange}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2 text-sm font-medium text-gray-700">
-                Confirm new password
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formState.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
-                  required
-                />
-              </label>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex items-center justify-center rounded-full bg-green-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isSubmitting ? "Updating..." : "Update password"}
-              </button>
-            </form>
           </section>
         </div>
       </div>

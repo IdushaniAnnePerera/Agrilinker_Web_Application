@@ -3,7 +3,10 @@ import api from "../../api/api";
 import AdminSidebar from "./AdminSidebar";
 
 const statusOptions = ["OPEN", "IN_PROGRESS", "RESOLVED"];
-const recipientOptions = [{ label: "Buyer", value: "BUYER" }];
+const recipientOptions = [
+  { label: "Buyer", value: "BUYER" },
+  { label: "Seller", value: "SELLER" },
+];
 
 const statusStyles = {
   OPEN: "bg-amber-100 text-amber-700",
@@ -95,7 +98,6 @@ export default function AdminComplaints() {
       setError("Unable to send the message.");
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gray-50">

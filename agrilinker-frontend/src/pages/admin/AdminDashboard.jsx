@@ -8,6 +8,10 @@ import {
   Tractor,
   User,
   Store,
+  LayoutDashboard,
+  BarChart3,
+  MessageSquareWarning,
+  Settings,
 } from "lucide-react";
 import api from "../../api/api";
 import AdminSidebar from "./AdminSidebar";
@@ -69,6 +73,16 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
+  // ✅ THIS LINE FIXES YOUR ERROR
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+  const navigation = [
+    { label: "Overview", Icon: LayoutDashboard, isActive: true },
+    { label: "Analysis", Icon: BarChart3 },
+    { label: "Complaints", Icon: MessageSquareWarning },
+    { label: "Settings", Icon: Settings },
+  ];
+
   const roleSummary = useMemo(
     () => [
       {
@@ -103,6 +117,7 @@ export default function AdminDashboard() {
     const fetchDashboard = async () => {
       setLoading(true);
       setError("");
+
       try {
         const [dashboardRes, usersRes, ordersRes, productsRes, fertilizersRes] =
           await Promise.all([
@@ -134,144 +149,185 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 lg:flex-row lg:gap-10 lg:px-8 lg:py-10">
-        <AdminSidebar
-          isExpanded={isSidebarExpanded}
-          onToggle={() => setIsSidebarExpanded((prev) => !prev)}
-        />
+        {/* Collapsible sidebar */}
+        <aside
+          className={`w-full rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 lg:sticky lg:top-8 lg:self-start ${isSidebarExpanded ? "lg:w-64" : "lg:w-24"
+            }`}
+        >
+          <div className="flex items-start justify-between gap-3">
+            {isSidebarExpanded ? (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">
+                  Admin Menu
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-gray-900">
+                  Admin panel
+                </h2>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setIsSidebarExpanded((prev) => !prev)}
+              className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-gray-300 hover:text-gray-800"
+            >
+              {isSidebarExpanded ? "Collapse" : "Expand"}
+            </button>
+          </div>
+
+          <nav className="mt-6 space-y-2">
+            {navigation.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${item.isActive
+                    ? "bg-green-50 text-green-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                  }`}
+              >
+                <span
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.isActive
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-100 text-gray-500"
+                    }`}
+                >
+                  <item.Icon size={20} />
+                </span>
+                {isSidebarExpanded ? item.label : null}
+              </button>
+            ))}
+          </nav>
+        </aside>
 
         <div className="flex-1 space-y-8">
           <header className="rounded-3xl bg-gradient-to-r from-green-900 via-green-700 to-green-600 p-8 text-white shadow-lg">
             <p className="text-sm uppercase tracking-[0.3em] text-green-100">
               ADMIN DASHBOARD
             </p>
-            <h1 className="mt-3 text-3xl font-bold md:text-4xl">
-              Overview
-            </h1>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">Overview</h1>
             <p className="mt-2 max-w-2xl text-green-100">
-              Track marketplace health, nurture users, and celebrate every harvest
-              with a warm, centralized admin workspace.
+              Track marketplace health, nurture users, and celebrate every
+              harvest with a warm, centralized admin workspace.
             </p>
           </header>
 
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
-            {error}
-          </div>
-        ) : null}
-
-        {/* Icon-accented stat cards */}
-        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Total Users"
-            value={dashboard.totalUsers}
-            loading={loading}
-            Icon={Users}
-            accent="bg-blue-600"
-          />
-          <StatCard
-            label="Orders"
-            value={dashboard.totalOrders}
-            loading={loading}
-            Icon={ShoppingCart}
-            accent="bg-green-600"
-          />
-          <StatCard
-            label="Products"
-            value={dashboard.totalProducts}
-            loading={loading}
-            Icon={Package}
-            accent="bg-amber-600"
-          />
-          <StatCard
-            label="Fertilizers"
-            value={dashboard.totalFertilizers}
-            loading={loading}
-            Icon={Leaf}
-            accent="bg-emerald-600"
-          />
-        </section>
-
-        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Community roles overview
-          </h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-4">
-            {roleSummary.map((role) => (
-              <RoleCard
-                key={role.label}
-                label={role.label}
-                value={role.value}
-                loading={loading}
-                Icon={role.Icon}
-                accent={role.accent}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">Latest users</h2>
-            <div className="mt-4 space-y-4">
-              {(users || []).slice(0, 5).map((user) => (
-                <div
-                  key={user.id || user._id}
-                  className="flex items-start justify-between border-b border-gray-100 pb-3 last:border-b-0 last:pb-0"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {user.fullName || user.name || "—"}
-                    </p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                  </div>
-                  <div className="text-right text-xs text-gray-500">
-                    {(user.roles || []).join(", ") || user.role || "—"}
-                  </div>
-                </div>
-              ))}
-              {!loading && (users || []).length === 0 ? (
-                <p className="text-sm text-gray-500">No users yet.</p>
-              ) : null}
+          {error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
+              {error}
             </div>
-          </div>
+          ) : null}
 
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+          <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Total Users"
+              value={dashboard.totalUsers}
+              loading={loading}
+              Icon={Users}
+              accent="bg-blue-600"
+            />
+            <StatCard
+              label="Orders"
+              value={dashboard.totalOrders}
+              loading={loading}
+              Icon={ShoppingCart}
+              accent="bg-green-600"
+            />
+            <StatCard
+              label="Products"
+              value={dashboard.totalProducts}
+              loading={loading}
+              Icon={Package}
+              accent="bg-amber-600"
+            />
+            <StatCard
+              label="Fertilizers"
+              value={dashboard.totalFertilizers}
+              loading={loading}
+              Icon={Leaf}
+              accent="bg-emerald-600"
+            />
+          </section>
+
+          <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h2 className="text-lg font-semibold text-gray-900">
-              Recent orders
+              Community roles overview
             </h2>
-            <div className="mt-4 space-y-4">
-              {(orders || []).slice(0, 5).map((order) => (
-                <div
-                  key={order.id || order._id}
-                  className="flex items-start justify-between border-b border-gray-100 pb-3 last:border-b-0 last:pb-0"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {order.customerName || order.customer?.name || "—"}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {order.customerEmail || order.customer?.email || "—"}
-                    </p>
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <p>
-                      LKR{" "}
-                      {Number(
-                        order.totalAmount ?? order.total ?? 0,
-                      ).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {order.itemCount ?? order.items?.length ?? 0} items
-                    </p>
-                  </div>
-                </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-4">
+              {roleSummary.map((role) => (
+                <RoleCard
+                  key={role.label}
+                  label={role.label}
+                  value={role.value}
+                  loading={loading}
+                  Icon={role.Icon}
+                  accent={role.accent}
+                />
               ))}
-              {!loading && (orders || []).length === 0 ? (
-                <p className="text-sm text-gray-500">No orders yet.</p>
-              ) : null}
             </div>
-          </div>
-        </section>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Latest users
+              </h2>
+              <div className="mt-4 space-y-4">
+                {(users || []).slice(0, 5).map((u) => (
+                  <div
+                    key={u.id || u._id}
+                    className="flex items-start justify-between border-b border-gray-100 pb-3 last:border-b-0 last:pb-0"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {u.fullName || u.name || "—"}
+                      </p>
+                      <p className="text-sm text-gray-500">{u.email || "—"}</p>
+                    </div>
+                    <div className="text-right text-xs text-gray-500">
+                      {(u.roles || []).join(", ") || u.role || "—"}
+                    </div>
+                  </div>
+                ))}
+
+                {!loading && (users || []).length === 0 ? (
+                  <p className="text-sm text-gray-500">No users yet.</p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Recent orders
+              </h2>
+              <div className="mt-4 space-y-4">
+                {(orders || []).slice(0, 5).map((o) => (
+                  <div
+                    key={o.id || o._id}
+                    className="flex items-start justify-between border-b border-gray-100 pb-3 last:border-b-0 last:pb-0"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {o.customerName || o.customer?.name || "—"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {o.customerEmail || o.customer?.email || "—"}
+                      </p>
+                    </div>
+                    <div className="text-right text-sm text-gray-600">
+                      <p>LKR {Number(o.totalAmount ?? o.total ?? 0).toFixed(2)}</p>
+                      <p className="text-xs text-gray-400">
+                        {o.itemCount ?? o.items?.length ?? 0} items
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {!loading && (orders || []).length === 0 ? (
+                  <p className="text-sm text-gray-500">No orders yet.</p>
+                ) : null}
+              </div>
+            </div>
+          </section>
 
           <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h2 className="text-lg font-semibold text-gray-900">Inventory</h2>
@@ -279,17 +335,15 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-gray-100 p-4">
                 <p className="text-sm text-gray-500">Products</p>
                 <ul className="mt-3 space-y-2 text-sm text-gray-700">
-                  {(products || []).map((product) => (
-                    <li
-                      key={product.id || product._id}
-                      className="flex justify-between"
-                    >
-                      <span>{product.name || product.title || "—"}</span>
+                  {(products || []).map((p) => (
+                    <li key={p.id || p._id} className="flex justify-between">
+                      <span>{p.name || p.title || "—"}</span>
                       <span className="text-gray-500">
-                        {product.quantity ?? product.stock ?? 0}
+                        {p.quantity ?? p.stock ?? 0}
                       </span>
                     </li>
                   ))}
+
                   {!loading && (products || []).length === 0 ? (
                     <li className="text-gray-500">No products yet.</li>
                   ) : null}
@@ -299,17 +353,15 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-gray-100 p-4">
                 <p className="text-sm text-gray-500">Fertilizers</p>
                 <ul className="mt-3 space-y-2 text-sm text-gray-700">
-                  {(fertilizers || []).map((fertilizer) => (
-                    <li
-                      key={fertilizer.id || fertilizer._id}
-                      className="flex justify-between"
-                    >
-                      <span>{fertilizer.name || fertilizer.title || "—"}</span>
+                  {(fertilizers || []).map((f) => (
+                    <li key={f.id || f._id} className="flex justify-between">
+                      <span>{f.name || f.title || "—"}</span>
                       <span className="text-gray-500">
-                        {fertilizer.stock ?? fertilizer.quantity ?? 0}
+                        {f.stock ?? f.quantity ?? 0}
                       </span>
                     </li>
                   ))}
+
                   {!loading && (fertilizers || []).length === 0 ? (
                     <li className="text-gray-500">No fertilizers yet.</li>
                   ) : null}

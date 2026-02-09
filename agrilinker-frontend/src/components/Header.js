@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaShoppingCart } from "react-icons/fa";
@@ -6,6 +6,8 @@ import UserMenu from "./UserMenu";
 
 function Header() {
   const { cart } = useContext(CartContext);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-green-800 via-green-700 to-green-600 shadow-md flex items-center justify-between px-8 py-6">
       
