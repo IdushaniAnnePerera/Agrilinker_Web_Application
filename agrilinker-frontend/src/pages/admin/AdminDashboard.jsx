@@ -10,6 +10,7 @@ import {
   Store,
 } from "lucide-react";
 import api from "../../api/api";
+import AdminSidebar from "./AdminSidebar";
 
 const defaultDashboard = {
   totalUsers: 0,
@@ -66,6 +67,7 @@ export default function AdminDashboard() {
   const [fertilizers, setFertilizers] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   const roleSummary = useMemo(
     () => [
@@ -130,20 +132,26 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <header className="rounded-3xl bg-gradient-to-r from-green-900 via-green-700 to-green-600 p-8 text-white shadow-lg">
-          <p className="text-sm uppercase tracking-[0.3em] text-green-100">
-            ADMIN DASHBOARD
-          </p>
-          <h1 className="mt-3 text-3xl font-bold md:text-4xl">
-            Keep AgriLinker thriving
-          </h1>
-          <p className="mt-2 max-w-2xl text-green-100">
-            Track marketplace health, nurture users, and celebrate every harvest
-            with a warm, centralized admin workspace.
-          </p>
-        </header>
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 lg:flex-row lg:gap-10 lg:px-8 lg:py-10">
+        <AdminSidebar
+          isExpanded={isSidebarExpanded}
+          onToggle={() => setIsSidebarExpanded((prev) => !prev)}
+        />
+
+        <div className="flex-1 space-y-8">
+          <header className="rounded-3xl bg-gradient-to-r from-green-900 via-green-700 to-green-600 p-8 text-white shadow-lg">
+            <p className="text-sm uppercase tracking-[0.3em] text-green-100">
+              ADMIN DASHBOARD
+            </p>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">
+              Overview
+            </h1>
+            <p className="mt-2 max-w-2xl text-green-100">
+              Track marketplace health, nurture users, and celebrate every harvest
+              with a warm, centralized admin workspace.
+            </p>
+          </header>
 
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
@@ -265,50 +273,51 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Inventory</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-gray-100 p-4">
-              <p className="text-sm text-gray-500">Products</p>
-              <ul className="mt-3 space-y-2 text-sm text-gray-700">
-                {(products || []).map((product) => (
-                  <li
-                    key={product.id || product._id}
-                    className="flex justify-between"
-                  >
-                    <span>{product.name || product.title || "—"}</span>
-                    <span className="text-gray-500">
-                      {product.quantity ?? product.stock ?? 0}
-                    </span>
-                  </li>
-                ))}
-                {!loading && (products || []).length === 0 ? (
-                  <li className="text-gray-500">No products yet.</li>
-                ) : null}
-              </ul>
-            </div>
+          <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900">Inventory</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-gray-100 p-4">
+                <p className="text-sm text-gray-500">Products</p>
+                <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                  {(products || []).map((product) => (
+                    <li
+                      key={product.id || product._id}
+                      className="flex justify-between"
+                    >
+                      <span>{product.name || product.title || "—"}</span>
+                      <span className="text-gray-500">
+                        {product.quantity ?? product.stock ?? 0}
+                      </span>
+                    </li>
+                  ))}
+                  {!loading && (products || []).length === 0 ? (
+                    <li className="text-gray-500">No products yet.</li>
+                  ) : null}
+                </ul>
+              </div>
 
-            <div className="rounded-xl border border-gray-100 p-4">
-              <p className="text-sm text-gray-500">Fertilizers</p>
-              <ul className="mt-3 space-y-2 text-sm text-gray-700">
-                {(fertilizers || []).map((fertilizer) => (
-                  <li
-                    key={fertilizer.id || fertilizer._id}
-                    className="flex justify-between"
-                  >
-                    <span>{fertilizer.name || fertilizer.title || "—"}</span>
-                    <span className="text-gray-500">
-                      {fertilizer.stock ?? fertilizer.quantity ?? 0}
-                    </span>
-                  </li>
-                ))}
-                {!loading && (fertilizers || []).length === 0 ? (
-                  <li className="text-gray-500">No fertilizers yet.</li>
-                ) : null}
-              </ul>
+              <div className="rounded-xl border border-gray-100 p-4">
+                <p className="text-sm text-gray-500">Fertilizers</p>
+                <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                  {(fertilizers || []).map((fertilizer) => (
+                    <li
+                      key={fertilizer.id || fertilizer._id}
+                      className="flex justify-between"
+                    >
+                      <span>{fertilizer.name || fertilizer.title || "—"}</span>
+                      <span className="text-gray-500">
+                        {fertilizer.stock ?? fertilizer.quantity ?? 0}
+                      </span>
+                    </li>
+                  ))}
+                  {!loading && (fertilizers || []).length === 0 ? (
+                    <li className="text-gray-500">No fertilizers yet.</li>
+                  ) : null}
+                </ul>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   );

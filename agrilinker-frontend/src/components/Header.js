@@ -6,7 +6,6 @@ import UserMenu from "./UserMenu";
 
 function Header() {
   const { cart } = useContext(CartContext);
-
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-green-800 via-green-700 to-green-600 shadow-md flex items-center justify-between px-8 py-6">
       
@@ -30,6 +29,9 @@ function Header() {
         </Link>
         <Link to="/fertilizers" className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150">
           Fertilizers
+        </Link>
+        <Link to="/support" className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150">
+          Support
         </Link>
       </nav>
 
