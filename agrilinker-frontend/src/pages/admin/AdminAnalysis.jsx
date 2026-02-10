@@ -3,10 +3,18 @@ import api from "../../api/api";
 import AdminSidebar from "./AdminSidebar";
 
 const WEEKS_TO_SHOW = 8;
+const MONTHS_TO_SHOW = 12;
 
 const shortWeekFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
+});
+
+const monthFormatter = new Intl.DateTimeFormat("en", { month: "short" });
+const lkrFormatter = new Intl.NumberFormat("en-LK", {
+  style: "currency",
+  currency: "LKR",
+  maximumFractionDigits: 0,
 });
 
 function normalizeRole(role) {
@@ -26,6 +34,12 @@ function getWeekStart(dateInput) {
 
 function toIsoDateKey(date) {
   return date.toISOString().slice(0, 10);
+}
+
+function toDateSafe(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function buildWeekBuckets() {
@@ -54,10 +68,23 @@ function buildWeekBuckets() {
   return buckets;
 }
 
-function toDateSafe(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+function buildMonthBuckets() {
+  const now = new Date();
+  const buckets = [];
+
+  for (let index = MONTHS_TO_SHOW - 1; index >= 0; index -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+    const nextDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    buckets.push({
+      key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+      label: monthFormatter.format(date),
+      start: date,
+      end: nextDate,
+      totalSales: 0,
+    });
+  }
+
+  return buckets;
 }
 
 function BarChartCard({ title, subtitle, data, valueKey, colorClass = "bg-green-600" }) {
@@ -129,26 +156,158 @@ function StackedRoleChart({ data }) {
   );
 }
 
+function ComplaintStatusPieCard({ statusData }) {
+  const total = statusData.reduce((sum, item) => sum + item.value, 0);
+  const colors = ["#2563eb", "#f59e0b", "#10b981", "#ef4444"];
+
+  let currentAngle = 0;
+  const gradientStops = statusData
+    .map((item, index) => {
+      const angle = total ? (item.value / total) * 360 : 0;
+      const start = currentAngle;
+      const end = currentAngle + angle;
+      currentAngle = end;
+      return `${colors[index % colors.length]} ${start}deg ${end}deg`;
+    })
+    .join(", ");
+
+  return (
+    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+      <h2 className="text-lg font-semibold text-gray-900">Complaint Status Distribution</h2>
+      <p className="mt-1 text-sm text-gray-500">Pie chart of complaints by status.</p>
+
+      <div className="mt-6 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
+        <div
+          className="h-44 w-44 rounded-full"
+          style={{
+            background: total ? `conic-gradient(${gradientStops})` : "#e5e7eb",
+          }}
+        />
+
+        <div className="w-full space-y-3">
+          {statusData.map((item, index) => (
+            <div key={item.label} className="flex items-center justify-between text-sm">
+              <div className="inline-flex items-center gap-2 text-gray-700">
+                <span className="h-3 w-3 rounded-full" style={{ background: colors[index % colors.length] }} />
+                {item.label}
+              </div>
+              <span className="font-semibold text-gray-900">{item.value}</span>
+            </div>
+          ))}
+          <p className="pt-2 text-xs text-gray-500">Total complaints: {total}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TopProductsCard({ products }) {
+  const maxQty = Math.max(1, ...products.map((product) => product.quantity));
+
+  return (
+    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+      <h2 className="text-lg font-semibold text-gray-900">Top 10 products by purchase</h2>
+      <p className="mt-1 text-sm text-gray-500">Most purchased products by total quantity sold.</p>
+
+      <div className="mt-6 space-y-3">
+        {products.length === 0 ? (
+          <p className="text-sm text-gray-500">No product purchase data available.</p>
+        ) : (
+          products.map((product, index) => {
+            const width = Math.max(6, Math.round((product.quantity / maxQty) * 100));
+            return (
+              <div key={product.name} className="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3">
+                <span className="text-xs font-semibold text-gray-500">{index + 1}</span>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{product.name}</p>
+                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-full rounded-full bg-indigo-600" style={{ width: `${width}%` }} />
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-gray-700">{product.quantity}</span>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SalesOverviewCard({ monthlySales }) {
+  const max = Math.max(1, ...monthlySales.map((item) => item.totalSales));
+  const min = Math.min(0, ...monthlySales.map((item) => item.totalSales));
+  const span = Math.max(1, max - min);
+
+  const points = monthlySales.map((item, index) => {
+    const x = (index / Math.max(1, monthlySales.length - 1)) * 100;
+    const y = 100 - ((item.totalSales - min) / span) * 100;
+    return { x, y };
+  });
+
+  const linePath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ");
+
+  const areaPath = `${linePath} L 100 100 L 0 100 Z`;
+  const latestSales = monthlySales[monthlySales.length - 1]?.totalSales || 0;
+
+  return (
+    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Sales Overview</h2>
+          <p className="mt-1 text-sm text-gray-500">Last 12 months revenue trend (LKR).</p>
+        </div>
+        <div className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">Last 12 months</div>
+      </div>
+
+      <p className="mt-4 text-2xl font-bold text-gray-900">{lkrFormatter.format(latestSales)}</p>
+
+      <div className="mt-4 rounded-xl border border-gray-100 bg-gradient-to-b from-indigo-50 to-white p-3">
+        <svg viewBox="0 0 100 100" className="h-52 w-full" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="salesArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.03" />
+            </linearGradient>
+          </defs>
+          <path d={areaPath} fill="url(#salesArea)" />
+          <path d={linePath} fill="none" stroke="#4338ca" strokeWidth="1.8" />
+        </svg>
+        <div className="mt-2 grid grid-cols-6 gap-2 text-[11px] text-gray-500 sm:grid-cols-12">
+          {monthlySales.map((item) => (
+            <span key={item.key}>{item.label}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function AdminAnalysis() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchAnalysisData = async () => {
       setError("");
       try {
-        const [usersRes, ordersRes, productsRes] = await Promise.all([
+        const [usersRes, rawOrdersRes, productsRes, ticketsRes] = await Promise.all([
           api.get("/api/admin/users"),
-          api.get("/api/admin/orders"),
+          api.get("/api/orders"),
           api.get("/api/admin/products"),
+          api.get("/api/support-tickets"),
         ]);
 
         setUsers(usersRes.data || []);
-        setOrders(ordersRes.data || []);
+        setOrders(rawOrdersRes.data || []);
         setProducts(productsRes.data || []);
+        setTickets(ticketsRes.data || []);
       } catch (fetchError) {
         console.error(fetchError);
         setError("Unable to load analytics right now. Please try again.");
@@ -171,7 +330,6 @@ export default function AdminAnalysis() {
       if (!createdAt) return;
       const weekStart = getWeekStart(createdAt);
       if (!weekStart) return;
-
       const bucket = weekMap.get(toIsoDateKey(weekStart));
       if (!bucket) return;
 
@@ -188,7 +346,6 @@ export default function AdminAnalysis() {
       if (!updatedAt || !user.id) return;
       const weekStart = getWeekStart(updatedAt);
       if (!weekStart) return;
-
       const bucket = weekMap.get(toIsoDateKey(weekStart));
       if (!bucket) return;
       bucket.activeIds.add(user.id);
@@ -199,11 +356,11 @@ export default function AdminAnalysis() {
       if (!orderDate) return;
       const weekStart = getWeekStart(orderDate);
       if (!weekStart) return;
-
       const bucket = weekMap.get(toIsoDateKey(weekStart));
       if (!bucket) return;
 
-      const userId = usersByEmail.get(String(order.customerEmail || "").toLowerCase());
+      const customerEmail = String(order?.customer?.email || order?.customerEmail || "").toLowerCase();
+      const userId = usersByEmail.get(customerEmail);
       if (userId) bucket.activeIds.add(userId);
     });
 
@@ -212,7 +369,6 @@ export default function AdminAnalysis() {
       if (!addedDate || !product.farmerId) return;
       const weekStart = getWeekStart(addedDate);
       if (!weekStart) return;
-
       const bucket = weekMap.get(toIsoDateKey(weekStart));
       if (!bucket) return;
       bucket.activeIds.add(product.farmerId);
@@ -224,6 +380,56 @@ export default function AdminAnalysis() {
       activeIds: undefined,
     }));
   }, [users, orders, products]);
+
+  const complaintStatusData = useMemo(() => {
+    const counts = { OPEN: 0, IN_PROGRESS: 0, RESOLVED: 0, OTHER: 0 };
+    tickets.forEach((ticket) => {
+      const status = String(ticket.status || "").toUpperCase();
+      if (status in counts) counts[status] += 1;
+      else counts.OTHER += 1;
+    });
+
+    return [
+      { label: "Open", value: counts.OPEN },
+      { label: "In Progress", value: counts.IN_PROGRESS },
+      { label: "Resolved", value: counts.RESOLVED },
+      { label: "Other", value: counts.OTHER },
+    ];
+  }, [tickets]);
+
+  const topProducts = useMemo(() => {
+    const productMap = new Map();
+
+    orders.forEach((order) => {
+      (order.items || []).forEach((item) => {
+        const name = String(item.name || "Unnamed Product").trim();
+        if (!name) return;
+        const qty = Number(item.quantity || 0);
+        productMap.set(name, (productMap.get(name) || 0) + qty);
+      });
+    });
+
+    return Array.from(productMap.entries())
+      .map(([name, quantity]) => ({ name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
+  }, [orders]);
+
+  const monthlySales = useMemo(() => {
+    const monthBuckets = buildMonthBuckets();
+
+    monthBuckets.forEach((bucket) => {
+      orders.forEach((order) => {
+        const orderDate = toDateSafe(order.orderDate);
+        if (!orderDate) return;
+        if (orderDate >= bucket.start && orderDate < bucket.end) {
+          bucket.totalSales += Number(order.totalAmount || 0);
+        }
+      });
+    });
+
+    return monthBuckets;
+  }, [orders]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -240,7 +446,7 @@ export default function AdminAnalysis() {
             </p>
             <h1 className="mt-3 text-3xl font-bold md:text-4xl">User activity and growth</h1>
             <p className="mt-2 max-w-3xl text-green-100">
-              Weekly visibility into registrations, active users, and role distribution trends.
+              Weekly trends, complaint distribution, top products, and Sri Lankan rupee sales overview.
             </p>
           </header>
 
@@ -269,6 +475,13 @@ export default function AdminAnalysis() {
           </div>
 
           <StackedRoleChart data={weeklyData} />
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <ComplaintStatusPieCard statusData={complaintStatusData} />
+            <TopProductsCard products={topProducts} />
+          </div>
+
+          <SalesOverviewCard monthlySales={monthlySales} />
         </div>
       </div>
     </div>
