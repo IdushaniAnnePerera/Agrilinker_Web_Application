@@ -14,7 +14,6 @@ import {
   Settings,
 } from "lucide-react";
 import api from "../../api/api";
-import AdminSidebar from "./AdminSidebar";
 
 const defaultDashboard = {
   totalUsers: 0,
@@ -73,8 +72,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
-  // ✅ THIS LINE FIXES YOUR ERROR
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   const navigation = [
     { label: "Overview", Icon: LayoutDashboard, isActive: true },

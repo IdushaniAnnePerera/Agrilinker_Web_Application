@@ -1,8 +1,66 @@
 import { useState } from "react";
+import api from "../../api/api";
 import AdminSidebar from "./AdminSidebar";
 
 export default function AdminSettings() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [form, setForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const onChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setStatus({ type: "", message: "" });
+
+    if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
+      setStatus({ type: "error", message: "Please fill in all password fields." });
+      return;
+    }
+
+    if (form.newPassword.length < 8) {
+      setStatus({ type: "error", message: "New password must be at least 8 characters." });
+      return;
+    }
+
+    if (form.newPassword !== form.confirmPassword) {
+      setStatus({ type: "error", message: "New password and confirm password do not match." });
+      return;
+    }
+
+    if (form.currentPassword === form.newPassword) {
+      setStatus({ type: "error", message: "New password must be different from the current password." });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await api.put("/api/admin/password", {
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword,
+      });
+      setStatus({ type: "success", message: "Password updated successfully." });
+      setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      if (error?.response?.status === 403) {
+        setStatus({ type: "error", message: "Current password is incorrect." });
+      } else if (error?.response?.status === 400) {
+        setStatus({ type: "error", message: "Invalid password payload. Please review and try again." });
+      } else {
+        setStatus({ type: "error", message: "Unable to update password right now." });
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,9 +80,74 @@ export default function AdminSettings() {
             </p>
           </header>
           <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <p className="text-sm text-gray-500">
-              Settings controls will be available here soon.
+            <h2 className="text-lg font-semibold text-gray-900">Change password</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Update your admin account password securely.
             </p>
+
+            {status.message ? (
+              <div
+                className={`mt-4 rounded-2xl border p-4 text-sm ${
+                  status.type === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-red-200 bg-red-50 text-red-700"
+                }`}
+              >
+                {status.message}
+              </div>
+            ) : null}
+
+            <form onSubmit={onSubmit} className="mt-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700" htmlFor="currentPassword">
+                  Current password
+                </label>
+                <input
+                  id="currentPassword"
+                  type="password"
+                  name="currentPassword"
+                  value={form.currentPassword}
+                  onChange={onChange}
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700" htmlFor="newPassword">
+                  New password
+                </label>
+                <input
+                  id="newPassword"
+                  type="password"
+                  name="newPassword"
+                  value={form.newPassword}
+                  onChange={onChange}
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700" htmlFor="confirmPassword">
+                  Confirm new password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={onChange}
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSaving ? "Updating..." : "Update password"}
+              </button>
+            </form>
           </section>
         </div>
       </div>
