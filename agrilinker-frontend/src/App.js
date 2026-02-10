@@ -27,6 +27,7 @@ import AdminComplaints from "./pages/admin/AdminComplaints";
 import AdminAnalysis from "./pages/admin/AdminAnalysis";
 import AdminSettings from "./pages/admin/AdminSettings";
 import SupportPage from "./pages/support/SupportPage";
+import SupportHistory from "./pages/support/SupportHistory";
 
 
 import { ToastContainer } from "react-toastify";
@@ -105,6 +106,7 @@ function App() {
 
           {/* SUPPORT */}
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/support/history" element={<SupportHistory />} />
 
           {/* CART & CHECKOUT */}
           <Route path="/cart" element={<CartPage />} />

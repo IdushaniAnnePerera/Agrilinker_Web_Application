@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +34,16 @@ public class SupportTicketController {
     @GetMapping
     public ResponseEntity<List<SupportTicket>> getAllTickets() {
         return ResponseEntity.ok(supportTicketService.getAllTickets());
+    }
+
+
+    @GetMapping("/buyer/{buyerEmail}")
+    public ResponseEntity<List<SupportTicket>> getTicketsByBuyerEmail(@PathVariable String buyerEmail) {
+        if (buyerEmail == null || buyerEmail.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        String decodedEmail = URLDecoder.decode(buyerEmail, StandardCharsets.UTF_8);
+        return ResponseEntity.ok(supportTicketService.getTicketsByBuyerEmail(decodedEmail));
     }
 
     @GetMapping("/{id}")
