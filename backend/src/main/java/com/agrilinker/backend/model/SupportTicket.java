@@ -25,7 +25,6 @@ public class SupportTicket {
     private String resolutionPreference;
     private String contactMethod;
     private String description;
-    private String buyerEmail;
     private Status status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

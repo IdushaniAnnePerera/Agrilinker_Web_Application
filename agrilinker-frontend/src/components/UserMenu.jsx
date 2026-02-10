@@ -9,7 +9,6 @@ export default function UserMenu() {
         return storedRoles ? JSON.parse(storedRoles) : [];
     }, []);
     const isAdmin = roles.includes("ADMIN");
-    const isBuyer = roles.includes("BUYER");
 
     const logout = () => {
         localStorage.removeItem("token");
@@ -32,9 +31,7 @@ export default function UserMenu() {
             {/* Dropdown */}
             {open && (
                 <div className="user-dropdown">
-                    {isBuyer && (
-                        <button onClick={() => navigate("/support/history")}>Support History</button>
-                    )}
+                    <button onClick={() => navigate("/profile")}>Profile</button>
                     {isAdmin && (
                         <>
                             <button onClick={() => navigate("/admin")}>

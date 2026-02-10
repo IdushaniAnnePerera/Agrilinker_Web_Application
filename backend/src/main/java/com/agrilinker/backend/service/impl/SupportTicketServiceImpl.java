@@ -36,11 +36,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
-    public List<SupportTicket> getTicketsByBuyerEmail(String buyerEmail) {
-        return supportTicketRepository.findByBuyerEmailOrderByUpdatedAtDesc(buyerEmail);
-    }
-
-    @Override
     public SupportTicket getTicketById(String id) {
         Optional<SupportTicket> optionalTicket = supportTicketRepository.findById(id);
         return optionalTicket.orElse(null);
