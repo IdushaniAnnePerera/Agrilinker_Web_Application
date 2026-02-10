@@ -6,9 +6,22 @@ export default function UserMenu() {
     const navigate = useNavigate();
     const roles = useMemo(() => {
         const storedRoles = localStorage.getItem("roles");
-        return storedRoles ? JSON.parse(storedRoles) : [];
+        if (!storedRoles) return [];
+        try {
+            const parsed = JSON.parse(storedRoles);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
     }, []);
-    const isAdmin = roles.includes("ADMIN");
+
+    const hasRole = (targetRole) =>
+        roles.some((role) =>
+            String(role).toUpperCase() === targetRole || String(role).toUpperCase() === `ROLE_${targetRole}`,
+        );
+
+    const isAdmin = hasRole("ADMIN");
+    const isBuyer = hasRole("BUYER");
 
     const logout = () => {
         localStorage.removeItem("token");
@@ -31,11 +44,14 @@ export default function UserMenu() {
             {/* Dropdown */}
             {open && (
                 <div className="user-dropdown">
-                    <button onClick={() => navigate("/profile")}>Profile</button>
+                    {isBuyer && (
+                        <button onClick={() => navigate("/support/history")}>Support History</button>
+                    )}
                     {isAdmin && (
-                        <button onClick={() => navigate("/admin")}>
-                            Admin Dashboard
-                        </button>
+                        <>
+                            <button onClick={() => navigate("/admin")}>Admin Dashboard</button>
+                            <button onClick={() => navigate("/admin/settings")}>Admin Settings</button>
+                        </>
                     )}
                     <button onClick={logout}>Logout</button>
                 </div>
