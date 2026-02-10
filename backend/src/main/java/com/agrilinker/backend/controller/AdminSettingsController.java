@@ -21,7 +21,11 @@ public class AdminSettingsController {
     public ResponseEntity<Void> updatePassword(@RequestBody PasswordUpdateRequest request) {
         if (request == null
                 || request.getCurrentPassword() == null
-                || request.getNewPassword() == null) {
+                || request.getNewPassword() == null
+                || request.getCurrentPassword().isBlank()
+                || request.getNewPassword().isBlank()
+                || request.getNewPassword().length() < 8
+                || request.getCurrentPassword().equals(request.getNewPassword())) {
             return ResponseEntity.badRequest().build();
         }
         boolean updated = adminSettingsService.updatePassword(
