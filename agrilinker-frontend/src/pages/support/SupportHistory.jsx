@@ -74,10 +74,12 @@ export default function SupportHistory() {
       setError("");
 
       try {
-        const response = await api.get(
-          `/api/support-tickets/buyer/${encodeURIComponent(buyerEmail)}`,
-        );
-        const data = response.data || [];
+        const response = await api.get("/api/support-tickets");
+        const data = (response.data || [])
+          .filter((ticket) =>
+            String(ticket?.buyerEmail || "").toLowerCase() === buyerEmail.toLowerCase(),
+          )
+          .sort((first, second) => new Date(second.updatedAt || 0) - new Date(first.updatedAt || 0));
         setTickets(data);
         if (data.length > 0) {
           setSelectedTicketId(data[0].id);

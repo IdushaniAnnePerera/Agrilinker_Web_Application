@@ -35,10 +35,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         return supportTicketRepository.findAll();
     }
 
-    @Override
-    public List<SupportTicket> getTicketsByBuyerEmail(String buyerEmail) {
-        return supportTicketRepository.findByBuyerEmailOrderByUpdatedAtDesc(buyerEmail);
-    }
 
     @Override
     public SupportTicket getTicketById(String id) {
