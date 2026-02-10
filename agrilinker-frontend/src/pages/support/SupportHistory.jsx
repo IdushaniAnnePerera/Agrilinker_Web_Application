@@ -16,9 +16,18 @@ export default function SupportHistory() {
   const [messageText, setMessageText] = useState("");
   const roles = useMemo(() => {
     const storedRoles = localStorage.getItem("roles");
-    return storedRoles ? JSON.parse(storedRoles) : [];
+    if (!storedRoles) return [];
+    try {
+      const parsedRoles = JSON.parse(storedRoles);
+      return Array.isArray(parsedRoles) ? parsedRoles : [];
+    } catch {
+      return [];
+    }
   }, []);
-  const isBuyer = roles.includes("BUYER");
+  const isBuyer = roles.some((role) => {
+    const normalizedRole = String(role || "").toUpperCase();
+    return normalizedRole === "BUYER" || normalizedRole === "ROLE_BUYER";
+  });
   const buyerEmail = localStorage.getItem("email") || "";
 
   const selectedTicket = useMemo(
