@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import api from "../../api/api";
 
@@ -24,6 +24,12 @@ const initialFormState = {
 export default function SupportPage() {
   const [formState, setFormState] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const roles = useMemo(() => {
+    const storedRoles = localStorage.getItem("roles");
+    return storedRoles ? JSON.parse(storedRoles) : [];
+  }, []);
+  const isBuyer = roles.includes("BUYER");
+  const buyerEmail = localStorage.getItem("email") || "";
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -32,6 +38,11 @@ export default function SupportPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!isBuyer || !buyerEmail) {
+      toast.error("Only signed-in buyers can submit complaints.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {
@@ -40,6 +51,7 @@ export default function SupportPage() {
         resolutionPreference: formState.resolutionPreference,
         contactMethod: formState.contactMethod,
         description: formState.description.trim(),
+        buyerEmail,
       };
 
       await api.post("/api/support-tickets", payload);
@@ -70,6 +82,12 @@ export default function SupportPage() {
           </p>
         </header>
 
+        {!isBuyer ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            This complaint form is available for buyer accounts only.
+          </div>
+        ) : null}
+
         <form
           onSubmit={handleSubmit}
           className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-gray-100"
@@ -85,6 +103,7 @@ export default function SupportPage() {
                 placeholder="e.g. ORD-10024"
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 required
+                disabled={!isBuyer}
               />
             </label>
 
@@ -96,6 +115,7 @@ export default function SupportPage() {
                 onChange={handleChange}
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 required
+                disabled={!isBuyer}
               >
                 <option value="">Select an option</option>
                 {complaintOptions.map((option) => (
@@ -114,6 +134,7 @@ export default function SupportPage() {
                 onChange={handleChange}
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 required
+                disabled={!isBuyer}
               >
                 <option value="">Select an option</option>
                 {resolutionOptions.map((option) => (
@@ -132,6 +153,7 @@ export default function SupportPage() {
                 onChange={handleChange}
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 required
+                disabled={!isBuyer}
               >
                 <option value="">Select an option</option>
                 {contactOptions.map((option) => (
@@ -152,22 +174,19 @@ export default function SupportPage() {
                 placeholder="Tell us what went wrong and what resolution you need."
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
                 required
+                disabled={!isBuyer}
               />
             </label>
-
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8 flex flex-wrap justify-end gap-3">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center rounded-full bg-green-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isSubmitting || !isBuyer}
+              className="rounded-full bg-green-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Submitting..." : "Submit complaint"}
             </button>
-            <p className="text-sm text-gray-500">
-              We’ll update you when the ticket status changes.
-            </p>
           </div>
         </form>
       </div>
