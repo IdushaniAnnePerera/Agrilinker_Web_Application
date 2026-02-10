@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Users, ShoppingCart, Package, Leaf, Shield, Tractor, User, Store } from "lucide-react";
 import api from "../../api/api";
-import AdminSidebar from "./AdminSidebar";
 
 const defaultDashboard = {
   totalUsers: 0,
@@ -59,6 +58,15 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+
+  const navigation = [
+    { label: "Overview", Icon: LayoutDashboard, isActive: true },
+    { label: "Analysis", Icon: BarChart3 },
+    { label: "Complaints", Icon: MessageSquareWarning },
+    { label: "Settings", Icon: Settings },
+  ];
+
   const roleSummary = useMemo(
     () => [
       {

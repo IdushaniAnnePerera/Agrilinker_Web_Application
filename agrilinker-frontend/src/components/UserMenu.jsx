@@ -37,8 +37,12 @@ export default function UserMenu() {
                     )}
                     {isAdmin && (
                         <>
-                            <button onClick={() => navigate("/admin")}>Admin Dashboard</button>
-                            <button onClick={() => navigate("/admin/settings")}>Admin Settings</button>
+                            <button onClick={() => navigate("/admin")}>
+                                Admin Dashboard
+                            </button>
+                            <button onClick={() => navigate("/admin/settings")}>
+                                Admin Settings
+                            </button>
                         </>
                     )}
                     <button onClick={logout}>Logout</button>

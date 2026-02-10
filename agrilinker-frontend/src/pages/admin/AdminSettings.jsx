@@ -9,8 +9,7 @@ export default function AdminSettings() {
     newPassword: "",
     confirmPassword: "",
   });
-  // renamed from "status" to "alert" to avoid global-name lint conflicts
-  const [alert, setAlert] = useState({ type: "", message: "" });
+  const [status, setStatus] = useState({ type: "", message: "" });
   const [isSaving, setIsSaving] = useState(false);
 
   const onChange = (event) => {
@@ -20,25 +19,25 @@ export default function AdminSettings() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    setAlert({ type: "", message: "" });
+    setStatus({ type: "", message: "" });
 
     if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-      setAlert({ type: "error", message: "Please fill in all password fields." });
+      setStatus({ type: "error", message: "Please fill in all password fields." });
       return;
     }
 
     if (form.newPassword.length < 8) {
-      setAlert({ type: "error", message: "New password must be at least 8 characters." });
+      setStatus({ type: "error", message: "New password must be at least 8 characters." });
       return;
     }
 
     if (form.newPassword !== form.confirmPassword) {
-      setAlert({ type: "error", message: "New password and confirm password do not match." });
+      setStatus({ type: "error", message: "New password and confirm password do not match." });
       return;
     }
 
     if (form.currentPassword === form.newPassword) {
-      setAlert({ type: "error", message: "New password must be different from the current password." });
+      setStatus({ type: "error", message: "New password must be different from the current password." });
       return;
     }
 
@@ -48,15 +47,15 @@ export default function AdminSettings() {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
-      setAlert({ type: "success", message: "Password updated successfully." });
+      setStatus({ type: "success", message: "Password updated successfully." });
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
       if (error?.response?.status === 403) {
-        setAlert({ type: "error", message: "Current password is incorrect." });
+        setStatus({ type: "error", message: "Current password is incorrect." });
       } else if (error?.response?.status === 400) {
-        setAlert({ type: "error", message: "Invalid password payload. Please review and try again." });
+        setStatus({ type: "error", message: "Invalid password payload. Please review and try again." });
       } else {
-        setAlert({ type: "error", message: "Unable to update password right now." });
+        setStatus({ type: "error", message: "Unable to update password right now." });
       }
     } finally {
       setIsSaving(false);
@@ -86,15 +85,15 @@ export default function AdminSettings() {
               Update your admin account password securely.
             </p>
 
-            {alert.message ? (
+            {status.message ? (
               <div
                 className={`mt-4 rounded-2xl border p-4 text-sm ${
-                  alert.type === "success"
+                  status.type === "success"
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                     : "border-red-200 bg-red-50 text-red-700"
                 }`}
               >
-                {alert.message}
+                {status.message}
               </div>
             ) : null}
 
