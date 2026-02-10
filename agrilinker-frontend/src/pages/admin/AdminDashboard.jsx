@@ -1,18 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Users,
-  ShoppingCart,
-  Package,
-  Leaf,
-  Shield,
-  Tractor,
-  User,
-  Store,
-  LayoutDashboard,
-  BarChart3,
-  MessageSquareWarning,
-  Settings,
-} from "lucide-react";
+import { Users, ShoppingCart, Package, Leaf, Shield, Tractor, User, Store } from "lucide-react";
 import api from "../../api/api";
 import AdminSidebar from "./AdminSidebar";
 
@@ -72,17 +59,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-
-  // ✅ THIS LINE FIXES YOUR ERROR
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-
-  const navigation = [
-    { label: "Overview", Icon: LayoutDashboard, isActive: true },
-    { label: "Analysis", Icon: BarChart3 },
-    { label: "Complaints", Icon: MessageSquareWarning },
-    { label: "Settings", Icon: Settings },
-  ];
-
   const roleSummary = useMemo(
     () => [
       {
@@ -149,55 +125,10 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 lg:flex-row lg:gap-10 lg:px-8 lg:py-10">
-        {/* Collapsible sidebar */}
-        <aside
-          className={`w-full rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 lg:sticky lg:top-8 lg:self-start ${isSidebarExpanded ? "lg:w-64" : "lg:w-24"
-            }`}
-        >
-          <div className="flex items-start justify-between gap-3">
-            {isSidebarExpanded ? (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">
-                  Admin Menu
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold text-gray-900">
-                  Admin panel
-                </h2>
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => setIsSidebarExpanded((prev) => !prev)}
-              className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-gray-300 hover:text-gray-800"
-            >
-              {isSidebarExpanded ? "Collapse" : "Expand"}
-            </button>
-          </div>
-
-          <nav className="mt-6 space-y-2">
-            {navigation.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${item.isActive
-                    ? "bg-green-50 text-green-700"
-                    : "text-gray-600 hover:bg-gray-50"
-                  }`}
-              >
-                <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.isActive
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-100 text-gray-500"
-                    }`}
-                >
-                  <item.Icon size={20} />
-                </span>
-                {isSidebarExpanded ? item.label : null}
-              </button>
-            ))}
-          </nav>
-        </aside>
+        <AdminSidebar
+          isExpanded={isSidebarExpanded}
+          onToggle={() => setIsSidebarExpanded((prev) => !prev)}
+        />
 
         <div className="flex-1 space-y-8">
           <header className="rounded-3xl bg-gradient-to-r from-green-900 via-green-700 to-green-600 p-8 text-white shadow-lg">

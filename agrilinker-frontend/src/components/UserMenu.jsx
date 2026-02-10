@@ -33,9 +33,14 @@ export default function UserMenu() {
                 <div className="user-dropdown">
                     <button onClick={() => navigate("/profile")}>Profile</button>
                     {isAdmin && (
-                        <button onClick={() => navigate("/admin")}>
-                            Admin Dashboard
-                        </button>
+                        <>
+                            <button onClick={() => navigate("/admin")}>
+                                Admin Dashboard
+                            </button>
+                            <button onClick={() => navigate("/admin/settings")}>
+                                Admin Settings
+                            </button>
+                        </>
                     )}
                     <button onClick={logout}>Logout</button>
                 </div>
