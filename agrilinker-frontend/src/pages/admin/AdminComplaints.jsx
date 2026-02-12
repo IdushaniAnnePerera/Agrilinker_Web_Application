@@ -29,8 +29,6 @@ export default function AdminComplaints() {
   const [orderError, setOrderError] = useState("");
   const [selectedOrderItem, setSelectedOrderItem] = useState(null);
   const [selectedFarmer, setSelectedFarmer] = useState(null);
-  const [productDetailsMap, setProductDetailsMap] = useState({});
-  const [productsLoading, setProductsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -104,39 +102,25 @@ export default function AdminComplaints() {
     }
 
     setSelectedOrder(null);
-    setProductDetailsMap({});
     setSelectedOrderItem(null);
     setSelectedFarmer(null);
     setOrderError("");
   }, [selectedTicket]);
 
-  const loadProductDetailsForOrder = async (order) => {
-    const items = order?.items || [];
-    const productIds = [...new Set(items.filter(isProductItem).map(normalizeItemId).filter(Boolean))];
+  const resolveFarmerByItem = (item) => {
+    if (!item) return null;
 
-    if (!productIds.length) {
-      setProductDetailsMap({});
-      return;
+    const farmerEmail =
+      item.farmerEmail ||
+      item.sellerEmail ||
+      item.ownerEmail ||
+      item?.product?.farmerEmail;
+
+    if (!farmerEmail) {
+      return null;
     }
 
-    setProductsLoading(true);
-
-    try {
-      const entries = await Promise.all(
-        productIds.map(async (id) => {
-          try {
-            const response = await api.get(`/api/products/${id}`);
-            return [id, response.data];
-          } catch {
-            return [id, null];
-          }
-        }),
-      );
-
-      setProductDetailsMap(Object.fromEntries(entries));
-    } finally {
-      setProductsLoading(false);
-    }
+    return users.find((user) => user.email === farmerEmail) || null;
   };
 
   const loadOrderDetails = async () => {
@@ -148,7 +132,6 @@ export default function AdminComplaints() {
     setOrderLoading(true);
     setOrderError("");
     setSelectedOrder(null);
-    setProductDetailsMap({});
     setSelectedOrderItem(null);
     setSelectedFarmer(null);
 
@@ -168,7 +151,6 @@ export default function AdminComplaints() {
       }
 
       setSelectedOrder(matchingOrder);
-      await loadProductDetailsForOrder(matchingOrder);
     } catch (fetchOrderError) {
       console.error(fetchOrderError);
       setOrderError("Unable to load order details right now.");
@@ -400,15 +382,12 @@ export default function AdminComplaints() {
 
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Ordered products and farmers
+                            Ordered products (click to view farmer)
                           </p>
-                          {productsLoading ? (
-                            <p className="mt-2 text-sm text-gray-500">Loading product details...</p>
-                          ) : null}
                           <div className="mt-2 space-y-2">
-                            {orderItemsWithFarmer.map(({ item, farmer }, index) => (
+                            {(selectedOrder.items || []).map((item, index) => (
                               <button
-                                key={`${normalizeItemId(item) || item.name}-${index}`}
+                                key={`${item.itemId || item.productId || item.fertilizerId || item.name}-${index}`}
                                 type="button"
                                 onClick={() => handleOrderItemClick(item)}
                                 className="w-full rounded-xl border border-gray-100 p-3 text-left text-sm transition hover:border-green-300 hover:bg-green-50"
@@ -416,9 +395,6 @@ export default function AdminComplaints() {
                                 <p className="font-medium text-gray-900">{item.name || "Unnamed item"}</p>
                                 <p className="text-xs text-gray-500">
                                   Qty {item.quantity || 0} • LKR {Number(item.price || 0).toFixed(2)}
-                                </p>
-                                <p className="mt-1 text-xs text-gray-600">
-                                  Farmer: {farmer?.fullName || farmer?.email || "Not available"}
                                 </p>
                               </button>
                             ))}
