@@ -33,6 +33,7 @@ import AdminAnalysis from "./pages/admin/AdminAnalysis";
 import AdminSettings from "./pages/admin/AdminSettings";
 import SupportPage from "./pages/support/SupportPage";
 import SupportHistory from "./pages/support/SupportHistory";
+import ContactUsPage from "./pages/support/ContactUsPage";
 
 
 
@@ -131,6 +132,7 @@ function App() {
 
           {/* SUPPORT */}
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/contact-us" element={<ContactUsPage />} />
           <Route path="/support/history" element={<SupportHistory />} />
 
           {/* CART & CHECKOUT */}
