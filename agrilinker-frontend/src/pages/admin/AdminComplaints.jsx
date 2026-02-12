@@ -10,13 +10,6 @@ const statusStyles = {
   RESOLVED: "bg-emerald-100 text-emerald-700",
 };
 
-const normalizeItemId = (item) =>
-  item?.itemId || item?.productId || item?.fertilizerId || item?.id || item?._id;
-
-const isProductItem = (item) => {
-  const type = (item?.itemType || item?.type || "").toString().toUpperCase();
-  return !type || type === "PRODUCT";
-};
 
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
@@ -37,37 +30,6 @@ export default function AdminComplaints() {
     () => tickets.find((ticket) => ticket.id === selectedTicketId) || null,
     [tickets, selectedTicketId],
   );
-
-  const resolveFarmerByItem = (item) => {
-    if (!item) return null;
-
-    const itemId = normalizeItemId(item);
-    const farmerEmailFromItem =
-      item.farmerEmail ||
-      item.sellerEmail ||
-      item.ownerEmail ||
-      item?.product?.farmerEmail ||
-      productDetailsMap[itemId]?.farmerEmail;
-
-    if (!farmerEmailFromItem) {
-      return null;
-    }
-
-    return users.find((user) => user.email === farmerEmailFromItem) || null;
-  };
-
-  const orderItemsWithFarmer = (selectedOrder?.items || []).map((item) => {
-    const itemId = normalizeItemId(item);
-    const productDetails = productDetailsMap[itemId] || null;
-    const farmer = resolveFarmerByItem(item);
-
-    return {
-      item,
-      itemId,
-      productDetails,
-      farmer,
-    };
-  });
 
   useEffect(() => {
     const fetchTickets = async () => {
