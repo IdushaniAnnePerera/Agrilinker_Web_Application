@@ -10,6 +10,13 @@ const statusStyles = {
   RESOLVED: "bg-emerald-100 text-emerald-700",
 };
 
+const normalizeItemId = (item) =>
+  item?.itemId || item?.productId || item?.fertilizerId || item?.id || item?._id;
+
+const isProductItem = (item) => {
+  const type = (item?.itemType || item?.type || "").toString().toUpperCase();
+  return !type || type === "PRODUCT";
+};
 
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
@@ -34,18 +41,33 @@ export default function AdminComplaints() {
   const resolveFarmerByItem = (item) => {
     if (!item) return null;
 
-    const farmerEmail =
+    const itemId = normalizeItemId(item);
+    const farmerEmailFromItem =
       item.farmerEmail ||
       item.sellerEmail ||
       item.ownerEmail ||
-      item?.product?.farmerEmail;
+      item?.product?.farmerEmail ||
+      productDetailsMap[itemId]?.farmerEmail;
 
-    if (!farmerEmail) {
+    if (!farmerEmailFromItem) {
       return null;
     }
 
-    return users.find((user) => user.email === farmerEmail) || null;
+    return users.find((user) => user.email === farmerEmailFromItem) || null;
   };
+
+  const orderItemsWithFarmer = (selectedOrder?.items || []).map((item) => {
+    const itemId = normalizeItemId(item);
+    const productDetails = productDetailsMap[itemId] || null;
+    const farmer = resolveFarmerByItem(item);
+
+    return {
+      item,
+      itemId,
+      productDetails,
+      farmer,
+    };
+  });
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -85,6 +107,21 @@ export default function AdminComplaints() {
     setOrderError("");
   }, [selectedTicket]);
 
+  const resolveFarmerByItem = (item) => {
+    if (!item) return null;
+
+    const farmerEmail =
+      item.farmerEmail ||
+      item.sellerEmail ||
+      item.ownerEmail ||
+      item?.product?.farmerEmail;
+
+    if (!farmerEmail) {
+      return null;
+    }
+
+    return users.find((user) => user.email === farmerEmail) || null;
+  };
 
   const loadOrderDetails = async () => {
     if (!selectedTicket?.orderId) {
