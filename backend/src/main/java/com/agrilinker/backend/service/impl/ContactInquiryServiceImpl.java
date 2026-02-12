@@ -20,12 +20,17 @@ public class ContactInquiryServiceImpl implements ContactInquiryService {
     public ContactInquiry createInquiry(ContactInquiry inquiry) {
         ContactInquiry inquiryToSave = inquiry;
 
+        // Always treat POST /api/contact-us as a create operation.
+        // Clearing any client-provided id prevents accidental upserts/overwrites.
+        inquiryToSave.setId(null);
+
         if (inquiryToSave.getStatus() == null) {
             inquiryToSave.setStatus(ContactInquiry.InquiryStatus.NEW);
         }
 
-        inquiryToSave.setCreatedAt(LocalDateTime.now());
-        inquiryToSave.setUpdatedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        inquiryToSave.setCreatedAt(now);
+        inquiryToSave.setUpdatedAt(now);
 
         return contactInquiryRepository.save(inquiryToSave);
     }
