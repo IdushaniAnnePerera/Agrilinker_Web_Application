@@ -26,11 +26,24 @@ export default function AdminComplaints() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [activeTab, setActiveTab] = useState("OPEN");
 
   const selectedTicket = useMemo(
     () => tickets.find((ticket) => ticket.id === selectedTicketId) || null,
     [tickets, selectedTicketId],
   );
+
+  const filteredTickets = useMemo(() => {
+    const normalizeStatus = (status) => status || "OPEN";
+
+    return tickets
+      .filter((ticket) => normalizeStatus(ticket.status) === activeTab)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime(),
+      );
+  }, [tickets, activeTab]);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -71,6 +84,21 @@ export default function AdminComplaints() {
     setSelectedFarmer(null);
     setOrderError("");
   }, [selectedTicket]);
+
+  useEffect(() => {
+    if (!filteredTickets.length) {
+      setSelectedTicketId("");
+      return;
+    }
+
+    const selectedExistsInTab = filteredTickets.some(
+      (ticket) => ticket.id === selectedTicketId,
+    );
+
+    if (!selectedExistsInTab) {
+      setSelectedTicketId(filteredTickets[0].id);
+    }
+  }, [filteredTickets, selectedTicketId]);
 
   const resolveFarmerByItem = (item) => {
     if (!item) return null;
@@ -215,15 +243,32 @@ export default function AdminComplaints() {
             <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Open tickets
+                  Complaints
                 </h2>
                 <span className="text-sm text-gray-500">
-                  {loading ? "Loading..." : `${tickets.length} total`}
+                  {loading ? "Loading..." : `${filteredTickets.length} in ${activeTab.replace("_", " ")}`}
                 </span>
               </div>
 
               <div className="mt-5 space-y-4">
-                {tickets.map((ticket) => (
+                <div className="grid grid-cols-3 gap-2 rounded-2xl bg-gray-100 p-1">
+                  {statusOptions.map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setActiveTab(status)}
+                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                        activeTab === status
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "text-gray-600 hover:text-gray-800"
+                      }`}
+                    >
+                      {status.replace("_", " ")}
+                    </button>
+                  ))}
+                </div>
+
+                {filteredTickets.map((ticket) => (
                   <button
                     key={ticket.id}
                     type="button"
@@ -258,9 +303,9 @@ export default function AdminComplaints() {
                   </button>
                 ))}
 
-                {!loading && tickets.length === 0 ? (
+                {!loading && filteredTickets.length === 0 ? (
                   <p className="text-sm text-gray-500">
-                    No complaints submitted yet.
+                    No complaints in this status.
                   </p>
                 ) : null}
               </div>
