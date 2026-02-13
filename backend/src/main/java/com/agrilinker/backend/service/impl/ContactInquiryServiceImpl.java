@@ -18,20 +18,42 @@ public class ContactInquiryServiceImpl implements ContactInquiryService {
 
     @Override
     public ContactInquiry createInquiry(ContactInquiry inquiry) {
-        ContactInquiry inquiryToSave = inquiry;
-
-        if (inquiryToSave.getStatus() == null) {
-            inquiryToSave.setStatus(ContactInquiry.InquiryStatus.NEW);
+        if (inquiry.getStatus() == null) {
+            inquiry.setStatus(ContactInquiry.InquiryStatus.NEW);
         }
 
-        inquiryToSave.setCreatedAt(LocalDateTime.now());
-        inquiryToSave.setUpdatedAt(LocalDateTime.now());
+        inquiry.setCreatedAt(LocalDateTime.now());
+        inquiry.setUpdatedAt(LocalDateTime.now());
 
-        return contactInquiryRepository.save(inquiryToSave);
+        return contactInquiryRepository.save(inquiry);
     }
 
     @Override
     public List<ContactInquiry> getInquiriesBySender(String senderEmail) {
         return contactInquiryRepository.findBySenderEmailOrderByCreatedAtDesc(senderEmail);
+    }
+
+    @Override
+    public List<ContactInquiry> getAllInquiries() {
+        return contactInquiryRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    @Override
+    public ContactInquiry replyToInquiry(String inquiryId, String adminEmail, String replyMessage, String method) {
+        ContactInquiry inquiry = contactInquiryRepository.findById(inquiryId)
+                .orElseThrow(() -> new RuntimeException("Inquiry not found"));
+
+        inquiry.setReplyMessage(replyMessage);
+        inquiry.setReplyMethod(method);
+        inquiry.setRepliedBy(adminEmail);
+        inquiry.setRepliedAt(LocalDateTime.now());
+        inquiry.setUpdatedAt(LocalDateTime.now());
+
+        // ✅ rule: once replied, set IN_PROGRESS (or RESOLVED if you prefer)
+        if (inquiry.getStatus() == null || inquiry.getStatus() == ContactInquiry.InquiryStatus.NEW) {
+            inquiry.setStatus(ContactInquiry.InquiryStatus.IN_PROGRESS);
+        }
+
+        return contactInquiryRepository.save(inquiry);
     }
 }
