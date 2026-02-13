@@ -67,14 +67,15 @@ export default function Login() {
       } else if (hasRole(roles, "FARMER")) {
         navigate("/farmer/dashboard");
       } else if (
-        hasRole(roles, "BUYER") ||
         hasRole(roles, "FERTILIZER_SUPPLIER") ||
         hasRole(roles, "FERTILIZERSUPPLIER")
       ) {
+        navigate("/fertilizer-dashboard");
+      } else if (hasRole(roles, "BUYER")) {
         navigate("/marketplace");
       } else {
         toast.error("Access denied");
-        navigate("/");
+        navigate("/home");
       }
     } catch (err) {
       toast.error("Invalid email or password");

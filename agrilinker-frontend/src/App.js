@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import FertilizerRecommendation from "./components/Fertilizers/FertilizerRecommendation";
 import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
@@ -57,7 +57,7 @@ function App() {
 
   // Hide Header & Footer on auth pages
   const hideLayout =
-    location.pathname === "/" ||
+    location.pathname === "/auth" ||
     location.pathname === "/login" ||
     location.pathname === "/register" ||
     location.pathname === "/loginfertilizer"; // ✅ ADD THIS
@@ -81,7 +81,8 @@ function App() {
 
         <Routes>
           {/* Auth */}
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/auth" element={<Landing />} />
           <Route path="/login" element={<Login />} />
 
           {/* ✅ Fertilizer Supplier Login */}
