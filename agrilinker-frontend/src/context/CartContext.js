@@ -52,6 +52,7 @@ export const CartProvider = ({ children }) => {
       image:
         item.imageUrl ||
         (item.product_image ? `http://localhost:8081${item.product_image}` : "/images/placeholder.png"),
+      farmerEmail: item.farmerEmail || item.sellerEmail || "",
       quantity: 1,
     };
 
