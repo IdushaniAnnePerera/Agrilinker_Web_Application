@@ -14,6 +14,7 @@ const statusStyles = {
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [selectedTicketId, setSelectedTicketId] = useState("");
   const [statusSelection, setStatusSelection] = useState("");
   const [messageText, setMessageText] = useState("");
@@ -36,13 +37,15 @@ export default function AdminComplaints() {
       setLoading(true);
       setError("");
       try {
-        const [ticketsResponse, usersResponse] = await Promise.all([
+        const [ticketsResponse, usersResponse, productsResponse] = await Promise.all([
           api.get("/api/support-tickets"),
           api.get("/api/admin/users"),
+          api.get("/api/products"),
         ]);
 
         setTickets(ticketsResponse.data || []);
         setUsers(usersResponse.data || []);
+        setProducts(productsResponse.data || []);
         if (ticketsResponse.data?.length) {
           setSelectedTicketId(ticketsResponse.data[0].id);
           setStatusSelection(ticketsResponse.data[0].status);
@@ -72,11 +75,21 @@ export default function AdminComplaints() {
   const resolveFarmerByItem = (item) => {
     if (!item) return null;
 
+    const productRef =
+      item.itemId || item.productId || item.fertilizerId || item.id || item._id;
+
+    const matchedProduct = products.find(
+      (product) =>
+        product.id === productRef ||
+        product._id === productRef ||
+        product.productId === productRef,
+    );
+
     const farmerEmail =
-      item.farmerEmail ||
-      item.sellerEmail ||
-      item.ownerEmail ||
-      item?.product?.farmerEmail;
+      matchedProduct?.farmerEmail ||
+      matchedProduct?.ownerEmail ||
+      matchedProduct?.sellerEmail ||
+      matchedProduct?.product?.farmerEmail;
 
     if (!farmerEmail) {
       return null;
@@ -390,7 +403,7 @@ export default function AdminComplaints() {
                               </div>
                             ) : (
                               <p className="mt-2 text-sm text-amber-700">
-                                Farmer information is not attached to this order item.
+                                Farmer information could not be found for this product.
                               </p>
                             )}
                           </div>
