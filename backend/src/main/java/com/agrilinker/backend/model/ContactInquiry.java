@@ -22,9 +22,20 @@ public class ContactInquiry {
     private String fullName;
     private String phoneNumber;
     private String subject;
+
+    // store: EMAIL / PHONE / WHATSAPP
     private String preferredContactMethod;
+
     private String message;
+
     private InquiryStatus status;
+
+    // ✅ reply fields (admin)
+    private String replyMessage;
+    private String replyMethod; // EMAIL / PHONE / WHATSAPP
+    private String repliedBy; // admin email
+    private LocalDateTime repliedAt;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
