@@ -24,4 +24,5 @@ public class CartItem {
     private int quantity;
     private String unit;
     private String image;
+    private String farmerEmail;
 }
