@@ -9,5 +9,9 @@ import com.agrilinker.backend.model.ContactInquiry;
 
 @Repository
 public interface ContactInquiryRepository extends MongoRepository<ContactInquiry, String> {
+
     List<ContactInquiry> findBySenderEmailOrderByCreatedAtDesc(String senderEmail);
+
+    // ✅ admin list
+    List<ContactInquiry> findAllByOrderByCreatedAtDesc();
 }
