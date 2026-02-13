@@ -3,6 +3,7 @@ import {
   BarChart3,
   LayoutDashboard,
   MessageSquareWarning,
+  MessageSquareMore,
   Settings,
 } from "lucide-react";
 
@@ -16,6 +17,11 @@ const navigationItems = [
     label: "Analysis",
     to: "/admin/analysis",
     Icon: BarChart3,
+  },
+  {
+    label: "Inquiries",
+    to: "/admin/inquiries",
+    Icon: MessageSquareMore,
   },
   {
     label: "Complaints",

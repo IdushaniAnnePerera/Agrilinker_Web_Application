@@ -29,6 +29,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminComplaints from "./pages/admin/AdminComplaints";
+import AdminInquiries from "./pages/admin/AdminInquiries";
 import AdminAnalysis from "./pages/admin/AdminAnalysis";
 import AdminSettings from "./pages/admin/AdminSettings";
 import SupportPage from "./pages/support/SupportPage";
@@ -126,6 +127,7 @@ function App() {
 
           {/* ADMIN PAGES */}
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/inquiries" element={<AdminInquiries />} />
           <Route path="/admin/complaints" element={<AdminComplaints />} />
           <Route path="/admin/analysis" element={<AdminAnalysis />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
