@@ -13,7 +13,6 @@ const statusStyles = {
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]);
-  const [products, setProducts] = useState([]);
   const [selectedTicketId, setSelectedTicketId] = useState("");
   const [statusSelection, setStatusSelection] = useState("");
   const [messageText, setMessageText] = useState("");
@@ -25,39 +24,24 @@ export default function AdminComplaints() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [activeTab, setActiveTab] = useState("OPEN");
 
   const selectedTicket = useMemo(
     () => tickets.find((ticket) => ticket.id === selectedTicketId) || null,
     [tickets, selectedTicketId],
   );
 
-  const filteredTickets = useMemo(() => {
-    const normalizeStatus = (status) => status || "OPEN";
-
-    return tickets
-      .filter((ticket) => normalizeStatus(ticket.status) === activeTab)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt || 0).getTime() -
-          new Date(a.createdAt || 0).getTime(),
-      );
-  }, [tickets, activeTab]);
-
   useEffect(() => {
     const fetchTickets = async () => {
       setLoading(true);
       setError("");
       try {
-        const [ticketsResponse, usersResponse, productsResponse] = await Promise.all([
+        const [ticketsResponse, usersResponse] = await Promise.all([
           api.get("/api/support-tickets"),
           api.get("/api/admin/users"),
-          api.get("/api/products"),
         ]);
 
         setTickets(ticketsResponse.data || []);
         setUsers(usersResponse.data || []);
-        setProducts(productsResponse.data || []);
         if (ticketsResponse.data?.length) {
           setSelectedTicketId(ticketsResponse.data[0].id);
           setStatusSelection(ticketsResponse.data[0].status);
@@ -84,39 +68,14 @@ export default function AdminComplaints() {
     setOrderError("");
   }, [selectedTicket]);
 
-  useEffect(() => {
-    if (!filteredTickets.length) {
-      setSelectedTicketId("");
-      return;
-    }
-
-    const selectedExistsInTab = filteredTickets.some(
-      (ticket) => ticket.id === selectedTicketId,
-    );
-
-    if (!selectedExistsInTab) {
-      setSelectedTicketId(filteredTickets[0].id);
-    }
-  }, [filteredTickets, selectedTicketId]);
-
   const resolveFarmerByItem = (item) => {
     if (!item) return null;
 
-    const productRef =
-      item.itemId || item.productId || item.fertilizerId || item.id || item._id;
-
-    const matchedProduct = products.find(
-      (product) =>
-        product.id === productRef ||
-        product._id === productRef ||
-        product.productId === productRef,
-    );
-
     const farmerEmail =
-      matchedProduct?.farmerEmail ||
-      matchedProduct?.ownerEmail ||
-      matchedProduct?.sellerEmail ||
-      matchedProduct?.product?.farmerEmail;
+      item.farmerEmail ||
+      item.sellerEmail ||
+      item.ownerEmail ||
+      item?.product?.farmerEmail;
 
     if (!farmerEmail) {
       return null;
@@ -242,32 +201,15 @@ export default function AdminComplaints() {
             <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Complaints
+                  Open tickets
                 </h2>
                 <span className="text-sm text-gray-500">
-                  {loading ? "Loading..." : `${filteredTickets.length} in ${activeTab.replace("_", " ")}`}
+                  {loading ? "Loading..." : `${tickets.length} total`}
                 </span>
               </div>
 
               <div className="mt-5 space-y-4">
-                <div className="grid grid-cols-3 gap-2 rounded-2xl bg-gray-100 p-1">
-                  {statusOptions.map((status) => (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() => setActiveTab(status)}
-                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                        activeTab === status
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-600 hover:text-gray-800"
-                      }`}
-                    >
-                      {status.replace("_", " ")}
-                    </button>
-                  ))}
-                </div>
-
-                {filteredTickets.map((ticket) => (
+                {tickets.map((ticket) => (
                   <button
                     key={ticket.id}
                     type="button"
@@ -302,9 +244,9 @@ export default function AdminComplaints() {
                   </button>
                 ))}
 
-                {!loading && filteredTickets.length === 0 ? (
+                {!loading && tickets.length === 0 ? (
                   <p className="text-sm text-gray-500">
-                    No complaints in this status.
+                    No complaints submitted yet.
                   </p>
                 ) : null}
               </div>
@@ -447,7 +389,7 @@ export default function AdminComplaints() {
                               </div>
                             ) : (
                               <p className="mt-2 text-sm text-amber-700">
-                                Farmer information could not be found for this product.
+                                Farmer information is not attached to this order item.
                               </p>
                             )}
                           </div>
@@ -550,3 +492,5 @@ export default function AdminComplaints() {
     </div>
   );
 }
+
+
