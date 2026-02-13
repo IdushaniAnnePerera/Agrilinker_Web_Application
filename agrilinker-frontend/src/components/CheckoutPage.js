@@ -46,6 +46,7 @@ const CheckoutPage = () => {
       name: item.name,
       quantity: item.quantity || 1,
       price: Number(item.price) || 0,
+      farmerEmail: item.farmerEmail || item.ownerEmail || item.sellerEmail || "",
     };
   };
 

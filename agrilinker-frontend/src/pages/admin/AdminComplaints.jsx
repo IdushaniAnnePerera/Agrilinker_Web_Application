@@ -10,7 +10,6 @@ const statusStyles = {
   RESOLVED: "bg-emerald-100 text-emerald-700",
 };
 
-
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]);
@@ -25,11 +24,22 @@ export default function AdminComplaints() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [activeTab, setActiveTab] = useState("OPEN");
 
   const selectedTicket = useMemo(
     () => tickets.find((ticket) => ticket.id === selectedTicketId) || null,
     [tickets, selectedTicketId],
   );
+
+  const filteredTickets = useMemo(() => {
+    return tickets
+      .filter((ticket) => (ticket.status || "OPEN") === activeTab)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime(),
+      );
+  }, [tickets, activeTab]);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -68,6 +78,21 @@ export default function AdminComplaints() {
     setSelectedFarmer(null);
     setOrderError("");
   }, [selectedTicket]);
+
+  useEffect(() => {
+    if (!filteredTickets.length) {
+      setSelectedTicketId("");
+      return;
+    }
+
+    const selectedExistsInTab = filteredTickets.some(
+      (ticket) => ticket.id === selectedTicketId,
+    );
+
+    if (!selectedExistsInTab) {
+      setSelectedTicketId(filteredTickets[0].id);
+    }
+  }, [filteredTickets, selectedTicketId]);
 
   const resolveFarmerByItem = (item) => {
     if (!item) return null;
@@ -205,12 +230,29 @@ export default function AdminComplaints() {
                   Open tickets
                 </h2>
                 <span className="text-sm text-gray-500">
-                  {loading ? "Loading..." : `${tickets.length} total`}
+                  {loading ? "Loading..." : `${filteredTickets.length} total`}
                 </span>
               </div>
 
               <div className="mt-5 space-y-4">
-                {tickets.map((ticket) => (
+                <div className="grid grid-cols-3 gap-2 rounded-2xl bg-gray-100 p-1">
+                  {statusOptions.map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setActiveTab(status)}
+                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                        activeTab === status
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "text-gray-600 hover:text-gray-800"
+                      }`}
+                    >
+                      {status.replace("_", " ")}
+                    </button>
+                  ))}
+                </div>
+
+                {filteredTickets.map((ticket) => (
                   <button
                     key={ticket.id}
                     type="button"
@@ -245,7 +287,7 @@ export default function AdminComplaints() {
                   </button>
                 ))}
 
-                {!loading && tickets.length === 0 ? (
+                {!loading && filteredTickets.length === 0 ? (
                   <p className="text-sm text-gray-500">
                     No complaints submitted yet.
                   </p>

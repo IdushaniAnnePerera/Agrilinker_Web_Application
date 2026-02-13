@@ -6,6 +6,7 @@ public class OrderItem {
     private String name;
     private int quantity;
     private double price;
+    private String farmerEmail;
 
     // Getters & Setters
     public String getFertilizerId() {
@@ -38,5 +39,13 @@ public class OrderItem {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getFarmerEmail() {
+        return farmerEmail;
+    }
+
+    public void setFarmerEmail(String farmerEmail) {
+        this.farmerEmail = farmerEmail;
     }
 }
