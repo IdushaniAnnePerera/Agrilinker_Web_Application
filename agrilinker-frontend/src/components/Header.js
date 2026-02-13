@@ -58,6 +58,18 @@ function Header() {
         >
           Fertilizers
         </Link>
+        <Link
+          to="/auth"
+          className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150"
+        >
+          Register
+        </Link>
+        <Link
+          to="/support"
+          className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150"
+        >
+          Register
+        </Link>
         {canViewSupport && (
           <Link
             to="/support"
