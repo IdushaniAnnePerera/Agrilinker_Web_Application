@@ -322,19 +322,33 @@ export default function ContactUsPage() {
                 <p className="flex items-center gap-2">
                   <FaPhoneAlt className="text-green-600" />
                   <span>
-                    <span className="font-semibold text-gray-900">Hotline:</span> +94 11 245 8899
+                    <span className="font-semibold text-gray-900">Hotline:</span>{" "}
+                    <a className="text-green-700 hover:underline" href="tel:+94112458899">
+                      +94 11 245 8899
+                    </a>
                   </span>
                 </p>
                 <p className="flex items-center gap-2">
                   <FaPhoneAlt className="text-green-600" />
                   <span>
-                    <span className="font-semibold text-gray-900">WhatsApp:</span> +94 77 222 3723
+                    <span className="font-semibold text-gray-900">WhatsApp:</span>{" "}
+                    <a
+                      className="text-green-700 hover:underline"
+                      href="https://wa.me/94772223723"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      +94 77 222 3723
+                    </a>
                   </span>
                 </p>
                 <p className="flex items-center gap-2">
                   <MdEmail className="text-green-600" />
                   <span>
-                    <span className="font-semibold text-gray-900">Email:</span> support@agrilinker.lk
+                    <span className="font-semibold text-gray-900">Email:</span>{" "}
+                    <a className="text-green-700 hover:underline" href="mailto:support@agrilinker.lk">
+                      support@agrilinker.lk
+                    </a>
                   </span>
                 </p>
                 <p>
@@ -407,7 +421,7 @@ export default function ContactUsPage() {
 
         <section className="rounded-3xl border border-[#d6d1c6] bg-[#f5f3ee] p-8 shadow-sm md:p-10">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
               Frequently Asked Questions
             </h2>
             <p className="mt-3 text-lg text-gray-600">
@@ -427,7 +441,7 @@ export default function ContactUsPage() {
                   <button
                     type="button"
                     onClick={() => setOpenFaqIndex((prev) => (prev === index ? -1 : index))}
-                    className="flex w-full items-center justify-between px-6 py-5 text-left text-2xl font-semibold text-gray-900"
+                    className="flex w-full items-center justify-between px-6 py-5 text-left text-xl font-semibold text-gray-900 md:text-2xl"
                   >
                     <span>{faq.question}</span>
                     <FaChevronDown
@@ -437,7 +451,7 @@ export default function ContactUsPage() {
 
                   {isOpen ? (
                     <div className="border-t border-[#ece6da] px-6 py-4">
-                      <p className="text-lg leading-relaxed text-gray-600">{faq.answer}</p>
+                      <p className="text-base leading-relaxed text-gray-600 md:text-lg">{faq.answer}</p>
                     </div>
                   ) : null}
                 </div>
