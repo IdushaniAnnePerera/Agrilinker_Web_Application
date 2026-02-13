@@ -10,7 +10,6 @@ const statusStyles = {
   RESOLVED: "bg-emerald-100 text-emerald-700",
 };
 
-
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]);
