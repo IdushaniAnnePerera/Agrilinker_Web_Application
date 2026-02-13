@@ -1,11 +1,25 @@
 import React, { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaShoppingCart } from "react-icons/fa";
 import UserMenu from "./UserMenu";
 
+const normalizeRole = (role) =>
+  String(role || "")
+    .toUpperCase()
+    .replace(/^ROLE_/, "")
+    .replace(/[\s_-]/g, "");
+
+const hasRole = (roles, targetRole) =>
+  Array.isArray(roles) &&
+  roles.some((role) => normalizeRole(role) === normalizeRole(targetRole));
+
 function Header() {
   const { cart } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
+  const roles = user?.roles || [];
+  const canViewSupport = hasRole(roles, "ADMIN") || hasRole(roles, "BUYER");
   // ✅ total quantity (not number of rows)
   const cartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
@@ -54,8 +68,16 @@ function Header() {
           to="/support"
           className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150"
         >
-          Support
+          Register
         </Link>
+        {canViewSupport && (
+          <Link
+            to="/support"
+            className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150"
+          >
+            Support
+          </Link>
+        )}
         <Link
           to="/contact-us"
           className="text-white text-lg font-semibold px-3 py-2 rounded hover:bg-green-900 hover:text-green-300 transition duration-150"
