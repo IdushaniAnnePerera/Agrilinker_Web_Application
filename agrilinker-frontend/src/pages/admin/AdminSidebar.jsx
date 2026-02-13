@@ -8,44 +8,37 @@ import {
 } from "lucide-react";
 
 const navigationItems = [
-  {
-    label: "Overview",
-    to: "/admin",
-    Icon: LayoutDashboard,
-  },
-  {
-    label: "Analysis",
-    to: "/admin/analysis",
-    Icon: BarChart3,
-  },
-  {
-    label: "Inquiries",
-    to: "/admin/inquiries",
-    Icon: MessageSquareMore,
-  },
-  {
-    label: "Complaints",
-    to: "/admin/complaints",
-    Icon: MessageSquareWarning,
-  },
-  {
-    label: "Settings",
-    to: "/admin/settings",
-    Icon: Settings,
-  },
+  { label: "Overview", to: "/admin", Icon: LayoutDashboard },
+  { label: "Analysis", to: "/admin/analysis", Icon: BarChart3 },
+  { label: "Inquiries", to: "/admin/inquiries", Icon: MessageSquareMore },
+  { label: "Complaints", to: "/admin/complaints", Icon: MessageSquareWarning },
+  { label: "Settings", to: "/admin/settings", Icon: Settings },
 ];
 
 export default function AdminSidebar({ isExpanded, onToggle }) {
   const location = useLocation();
 
+  const isItemActive = (path) => {
+    // Special case: Overview should match ONLY /admin
+    if (path === "/admin") {
+      return location.pathname === "/admin";
+    }
+
+    // Other pages: match exact OR sub-routes
+    return (
+      location.pathname === path ||
+      location.pathname.startsWith(path + "/")
+    );
+  };
+
   return (
     <aside
-      className={`w-full rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 lg:sticky lg:top-8 lg:self-start ${
-        isExpanded ? "lg:w-64" : "lg:w-24"
-      }`}
+      className={`w-full rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 lg:sticky lg:top-8 lg:self-start ${isExpanded ? "lg:w-64" : "lg:w-24"
+        }`}
     >
+      {/* Header */}
       <div className="flex items-start justify-between gap-3">
-        {isExpanded ? (
+        {isExpanded && (
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">
               Admin Menu
@@ -54,7 +47,8 @@ export default function AdminSidebar({ isExpanded, onToggle }) {
               Admin panel
             </h2>
           </div>
-        ) : null}
+        )}
+
         <button
           type="button"
           onClick={onToggle}
@@ -63,29 +57,34 @@ export default function AdminSidebar({ isExpanded, onToggle }) {
           {isExpanded ? "Collapse" : "Expand"}
         </button>
       </div>
+
+      {/* Navigation */}
       <nav className="mt-6 space-y-2">
         {navigationItems.map((item) => {
-          const isActive = location.pathname === item.to;
+          const isActive = isItemActive(item.to);
+
           return (
             <Link
               key={item.label}
               to={item.to}
-              className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${
-                isActive
+              className={`flex w-full items-center gap-3 rounded-2xl ${isExpanded ? "px-4" : "px-2 justify-center"
+                } py-3 text-left text-sm font-medium transition ${isActive
                   ? "bg-green-50 text-green-700"
                   : "text-gray-600 hover:bg-gray-50"
-              }`}
+                }`}
             >
+              {/* Icon */}
               <span
-                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                  isActive
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${isActive
                     ? "bg-green-600 text-white"
                     : "bg-gray-100 text-gray-500"
-                }`}
+                  }`}
               >
                 <item.Icon size={20} />
               </span>
-              {isExpanded ? item.label : null}
+
+              {/* Label */}
+              {isExpanded && item.label}
             </Link>
           );
         })}
