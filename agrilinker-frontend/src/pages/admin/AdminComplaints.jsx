@@ -13,6 +13,7 @@ const statusStyles = {
 export default function AdminComplaints() {
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [selectedTicketId, setSelectedTicketId] = useState("");
   const [statusSelection, setStatusSelection] = useState("");
   const [messageText, setMessageText] = useState("");
@@ -32,8 +33,10 @@ export default function AdminComplaints() {
   );
 
   const filteredTickets = useMemo(() => {
+    const normalizeStatus = (status) => status || "OPEN";
+
     return tickets
-      .filter((ticket) => (ticket.status || "OPEN") === activeTab)
+      .filter((ticket) => normalizeStatus(ticket.status) === activeTab)
       .sort(
         (a, b) =>
           new Date(b.createdAt || 0).getTime() -
@@ -46,13 +49,15 @@ export default function AdminComplaints() {
       setLoading(true);
       setError("");
       try {
-        const [ticketsResponse, usersResponse] = await Promise.all([
+        const [ticketsResponse, usersResponse, productsResponse] = await Promise.all([
           api.get("/api/support-tickets"),
           api.get("/api/admin/users"),
+          api.get("/api/products"),
         ]);
 
         setTickets(ticketsResponse.data || []);
         setUsers(usersResponse.data || []);
+        setProducts(productsResponse.data || []);
         if (ticketsResponse.data?.length) {
           setSelectedTicketId(ticketsResponse.data[0].id);
           setStatusSelection(ticketsResponse.data[0].status);
@@ -97,11 +102,21 @@ export default function AdminComplaints() {
   const resolveFarmerByItem = (item) => {
     if (!item) return null;
 
+    const productRef =
+      item.itemId || item.productId || item.fertilizerId || item.id || item._id;
+
+    const matchedProduct = products.find(
+      (product) =>
+        product.id === productRef ||
+        product._id === productRef ||
+        product.productId === productRef,
+    );
+
     const farmerEmail =
-      item.farmerEmail ||
-      item.sellerEmail ||
-      item.ownerEmail ||
-      item?.product?.farmerEmail;
+      matchedProduct?.farmerEmail ||
+      matchedProduct?.ownerEmail ||
+      matchedProduct?.sellerEmail ||
+      matchedProduct?.product?.farmerEmail;
 
     if (!farmerEmail) {
       return null;
@@ -227,10 +242,10 @@ export default function AdminComplaints() {
             <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Open tickets
+                  Complaints
                 </h2>
                 <span className="text-sm text-gray-500">
-                  {loading ? "Loading..." : `${filteredTickets.length} total`}
+                  {loading ? "Loading..." : `${filteredTickets.length} in ${activeTab.replace("_", " ")}`}
                 </span>
               </div>
 
@@ -289,7 +304,7 @@ export default function AdminComplaints() {
 
                 {!loading && filteredTickets.length === 0 ? (
                   <p className="text-sm text-gray-500">
-                    No complaints submitted yet.
+                    No complaints in this status.
                   </p>
                 ) : null}
               </div>
@@ -432,7 +447,7 @@ export default function AdminComplaints() {
                               </div>
                             ) : (
                               <p className="mt-2 text-sm text-amber-700">
-                                Farmer information is not attached to this order item.
+                                Farmer information could not be found for this product.
                               </p>
                             )}
                           </div>
