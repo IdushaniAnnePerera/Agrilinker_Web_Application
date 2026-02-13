@@ -87,7 +87,7 @@ function App() {
           <Route path="/loginfertilizer" element={<Loginfertilizer />} />
 
           <Route path="/register" element={<Register />} />
-<Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<Profile />} />
 
           {/* Home */}
           <Route
