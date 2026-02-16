@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import axios from "axios";
 import AdminSidebar from "./AdminSidebar";
 import api from "../../api/api";
 
@@ -76,29 +75,6 @@ const buildReplyDraft = (inquiry) => {
     ].join("\n");
 };
 
-const CHATBOT_REPLY_URL = process.env.REACT_APP_CHATBOT_API_URL || "http://localhost:5001/api/chat";
-
-const buildAiReplyPrompt = (inquiry) => {
-    const subject = inquiry?.subject || "No subject";
-    const message = inquiry?.message || "No message provided";
-    const fullName = inquiry?.fullName || "Customer";
-    const preferredMethod = normalizeMethod(inquiry?.preferredContactMethod);
-
-    return [
-        "You are an AgriLinker customer-support assistant writing responses for admins.",
-        "Write a clear and helpful support reply based on the inquiry details below.",
-        "Use a professional, warm tone and keep the response under 180 words.",
-        "Include a greeting, direct answer/next steps, and a short closing.",
-        "Do not invent order IDs, dates, refunds, or guarantees.",
-        "Return plain text only.",
-        "",
-        `Customer name: ${fullName}`,
-        `Preferred contact method: ${preferredMethod}`,
-        `Subject: ${subject}`,
-        `Message: ${message}`,
-    ].join("\n");
-};
-
 export default function AdminInquiries() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const [inquiries, setInquiries] = useState([]);
@@ -107,7 +83,6 @@ export default function AdminInquiries() {
     const [selectedInquiryId, setSelectedInquiryId] = useState("");
     const [replyMessage, setReplyMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
-    const [isGeneratingReply, setIsGeneratingReply] = useState(false);
 
     const fetchInquiries = async (keepId = "") => {
         setLoading(true);
@@ -223,38 +198,6 @@ export default function AdminInquiries() {
             toast.error(sendError?.response?.data?.message || "Failed to save reply.");
         } finally {
             setIsSending(false);
-        }
-    };
-
-    const handleGenerateAiReply = async () => {
-        if (!selectedInquiry) {
-            toast.error("Select an inquiry before generating a reply.");
-            return;
-        }
-
-        if (isReplied(selectedInquiry)) {
-            toast.error("This inquiry already has a saved reply.");
-            return;
-        }
-
-        setIsGeneratingReply(true);
-        try {
-            const prompt = buildAiReplyPrompt(selectedInquiry);
-            const { data } = await axios.post(CHATBOT_REPLY_URL, { message: prompt });
-            const aiReply = String(data?.reply || "").trim();
-
-            if (!aiReply) {
-                throw new Error("AI response was empty.");
-            }
-
-            setReplyMessage(aiReply);
-            toast.success("AI draft generated. Review before sending.");
-        } catch (generateError) {
-            console.error(generateError);
-            setReplyMessage(buildReplyDraft(selectedInquiry));
-            toast.error("Could not generate an AI reply. Loaded the default draft instead.");
-        } finally {
-            setIsGeneratingReply(false);
         }
     };
 
@@ -384,21 +327,9 @@ export default function AdminInquiries() {
                                     </div>
 
                                     <div>
-                                        <div className="flex items-center justify-between gap-3">
-                                            <label className="text-sm font-semibold text-gray-900" htmlFor="replyMessage">
-                                                Reply (editable)
-                                            </label>
-
-                                            <button
-                                                type="button"
-                                                onClick={handleGenerateAiReply}
-                                                disabled={isGeneratingReply || isReplied(selectedInquiry)}
-                                                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                {isGeneratingReply ? "Generating..." : "Generate with AI"}
-                                            </button>
-                                        </div>
-
+                                        <label className="text-sm font-semibold text-gray-900" htmlFor="replyMessage">
+                                            Reply (editable)
+                                        </label>
                                         <textarea
                                             id="replyMessage"
                                             placeholder={isReplied(selectedInquiry) ? "Reply already sent. Select another inquiry to reply." : ""}
