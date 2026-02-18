@@ -1,4 +1,4 @@
-// ✅ FULL src/App.js (/, /landing, /login, /register, /loginfertilizer are public)
+// Route security: only intro, login, and register are public
 import React from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -64,13 +64,11 @@ import ChatBot from "./components/ChatBot";
 function App() {
   const location = useLocation();
 
-  // ✅ hide layout on public pages (intro + landing + auth)
+  // Hide layout on public pages only (intro + auth)
   const hideLayout =
     location.pathname === "/" ||
-    location.pathname === "/landing" || // ✅ NEW (Landing is public and layout hidden)
     location.pathname === "/login" ||
-    location.pathname === "/register" ||
-    location.pathname === "/loginfertilizer";
+    location.pathname === "/register";
 
   return (
     <AuthProvider>
@@ -93,8 +91,14 @@ function App() {
             {/* ===================== PUBLIC ONLY ===================== */}
             <Route path="/" element={<IntroHome />} />{" "}
             {/* ✅ Intro page first */}
-            <Route path="/landing" element={<Landing />} />{" "}
-            {/* ✅ then your Landing */}
+            <Route
+              path="/landing"
+              element={
+                <ProtectedRoute>
+                  <Landing />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             {/* ===================== PROTECTED UTILS ===================== */}
@@ -257,10 +261,38 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {<Route path="/farmer/FarmerHub" element={<FarmerHub />} />}
-            <Route path="/farmer/orders" element={<FarmerOrders />} />
-            <Route path="/farmer/inquiries" element={<InquiryList />} />
-            <Route path="farmer/sales-history" element={<SalesHistory />} />
+            <Route
+              path="/farmer/FarmerHub"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <FarmerHub />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/orders"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <FarmerOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/inquiries"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <InquiryList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/sales-history"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <SalesHistory />
+                </ProtectedRoute>
+              }
+            />
             {/* ===================== FERTILIZER SUPPLIER ONLY ===================== */}
             <Route
               path="/fertilizer-dashboard"
