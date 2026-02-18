@@ -257,10 +257,38 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {<Route path="/farmer/FarmerHub" element={<FarmerHub />} />}
-            <Route path="/farmer/orders" element={<FarmerOrders />} />
-            <Route path="/farmer/inquiries" element={<InquiryList />} />
-            <Route path="farmer/sales-history" element={<SalesHistory />} />
+            <Route
+              path="/farmer/FarmerHub"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <FarmerHub />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/orders"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <FarmerOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/inquiries"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <InquiryList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/sales-history"
+              element={
+                <ProtectedRoute allowedRoles={["FARMER"]}>
+                  <SalesHistory />
+                </ProtectedRoute>
+              }
+            />
             {/* ===================== FERTILIZER SUPPLIER ONLY ===================== */}
             <Route
               path="/fertilizer-dashboard"

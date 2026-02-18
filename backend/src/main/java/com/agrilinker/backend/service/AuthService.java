@@ -10,7 +10,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.agrilinker.backend.dto.AddRoleRequest;
 import com.agrilinker.backend.dto.AuthResponse;
+import com.agrilinker.backend.dto.ChangePasswordRequest;
 import com.agrilinker.backend.dto.LoginRequest;
 import com.agrilinker.backend.dto.RegisterRequest;
 import com.agrilinker.backend.dto.UserProfileResponse;
@@ -79,6 +81,46 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getEmail(), rolesString);
 
         return new AuthResponse(token, user.getEmail(), user.getFullName(), user.getRoles());
+    }
+
+    public AuthResponse addRole(String email, AddRoleRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Set<User.UserRole> roles = user.getRoles();
+        if (roles.contains(request.getRole())) {
+            throw new RuntimeException("You are already registered for this role");
+        }
+
+        roles.add(request.getRole());
+        user.setRoles(roles);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String rolesString = user.getRoles().stream().map(Enum::name).collect(Collectors.joining(","));
+        String token = jwtUtil.generateToken(user.getEmail(), rolesString);
+
+        return new AuthResponse(token, user.getEmail(), user.getFullName(), user.getRoles(),
+                "Role added successfully");
+    }
+
+    public void changePassword(String email, ChangePasswordRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new RuntimeException("New password must be different from current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
     }
 
     public UserProfileResponse getProfile(String email) {

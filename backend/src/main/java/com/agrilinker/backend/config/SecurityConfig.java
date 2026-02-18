@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -42,37 +43,40 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Public routes
-                        .requestMatchers("/api/auth/**", "/error").permitAll()
-                        .requestMatchers("/api/chat/**").permitAll() // ✅ මෙන්න මේක ඇඩ් කරා
-                        .requestMatchers("/api/orders/**").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/fertilizers/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/cart/**").permitAll()
-                        .requestMatchers("/api/reviews/**").permitAll()
-                        .requestMatchers("/api/notifications/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // inquiry
-                        .requestMatchers("/api/inquiries/**").permitAll()
-                        .requestMatchers("/api/users/by-email").permitAll()
-                        .requestMatchers("/api/mcq/**").permitAll()
-                        .requestMatchers("/api/orders/farmer/monthly-sales/**").permitAll()
-                        .requestMatchers("/api/orders/farmer/**").permitAll()
+                        // Public auth only
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/error").permitAll()
 
-
-                        // Admin routes
+                        // Explicit RBAC by domain
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/farmer/**").hasAnyRole("FARMER", "ADMIN")
+                        .requestMatchers("/api/buyer/**").hasAnyRole("BUYER", "ADMIN")
+                        .requestMatchers("/api/fertilizersupplier/**").hasAnyRole("FERTILIZERSUPPLIER", "ADMIN")
+                        .requestMatchers("/api/support-tickets/**").hasAnyRole("BUYER", "ADMIN")
 
-                        // Role-based routes
-                        .requestMatchers("/api/farmer/**").hasRole("FARMER")
-                        .requestMatchers("/api/buyer/**").hasRole("BUYER")
-                        .requestMatchers("/api/fertilizersupplier/**").hasRole("FERTILIZERSUPPLIER")
+                        // Product APIs: read for logged-in users, write for farmers/admin
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated()
+                        .requestMatchers("/api/products/**").hasAnyRole("FARMER", "ADMIN")
 
-                        // ✅ Crop Advisor 
-.requestMatchers("/api/advisor/**").permitAll()
+                        // Fertilizer APIs: read for logged-in users, write for supplier/admin
+                        .requestMatchers(HttpMethod.GET, "/api/fertilizers/**").authenticated()
+                        .requestMatchers("/api/fertilizers/**").hasAnyRole("FERTILIZERSUPPLIER", "ADMIN")
 
-                        // All other requests need authentication
+                        // Orders and inquiries require authenticated users
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/inquiries/**").authenticated()
+                        .requestMatchers("/api/contact-us/**").authenticated()
+                        .requestMatchers("/api/reviews/**").authenticated()
+                        .requestMatchers("/api/mcq/**").authenticated()
+                        .requestMatchers("/api/advisor/**").authenticated()
+                        .requestMatchers("/api/chat/**").authenticated()
+                        .requestMatchers("/api/profile/**").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/cart/**").authenticated()
+                        .requestMatchers("/uploads/**").authenticated()
+
+                        // Any remaining endpoints also require login
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
