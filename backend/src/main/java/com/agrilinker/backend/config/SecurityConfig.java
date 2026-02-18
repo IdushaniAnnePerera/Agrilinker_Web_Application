@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Public routes
-                        .requestMatchers("/api/auth/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/error").permitAll()
                         .requestMatchers("/api/chat/**").permitAll() // ✅ මෙන්න මේක ඇඩ් කරා
                         .requestMatchers("/api/orders/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()

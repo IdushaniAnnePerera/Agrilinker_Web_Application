@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.agrilinker.backend.dto.AddRoleRequest;
 import com.agrilinker.backend.dto.AuthResponse;
+import com.agrilinker.backend.dto.ChangePasswordRequest;
 import com.agrilinker.backend.dto.LoginRequest;
 import com.agrilinker.backend.dto.RegisterRequest;
 import com.agrilinker.backend.dto.UserProfileResponse;
@@ -45,6 +47,33 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("Invalid credentials"));
+        }
+    }
+
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            authService.changePassword(email, request);
+            return ResponseEntity.ok(new MessageResponse("Password updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/add-role")
+    public ResponseEntity<?> addRole(@Valid @RequestBody AddRoleRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            AuthResponse response = authService.addRole(email, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
