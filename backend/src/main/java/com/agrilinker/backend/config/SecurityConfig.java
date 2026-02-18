@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -43,22 +44,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Public routes
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/error").permitAll()
-                        .requestMatchers("/api/chat/**").permitAll() // ✅ මෙන්න මේක ඇඩ් කරා
-                        .requestMatchers("/api/orders/**").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/fertilizers/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/cart/**").permitAll()
-                        .requestMatchers("/api/reviews/**").permitAll()
-                        .requestMatchers("/api/notifications/**").permitAll()
-
-                        // inquiry
-                        .requestMatchers("/api/inquiries/**").permitAll()
-                        .requestMatchers("/api/users/by-email").permitAll()
-                        .requestMatchers("/api/mcq/**").permitAll()
-                        .requestMatchers("/api/orders/farmer/monthly-sales/**").permitAll()
-                        .requestMatchers("/api/orders/farmer/**").permitAll()
 
 
                         // Admin routes
@@ -68,9 +56,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/farmer/**").hasRole("FARMER")
                         .requestMatchers("/api/buyer/**").hasRole("BUYER")
                         .requestMatchers("/api/fertilizersupplier/**").hasRole("FERTILIZERSUPPLIER")
-
-                        // ✅ Crop Advisor 
-.requestMatchers("/api/advisor/**").permitAll()
 
                         // All other requests need authentication
                         .anyRequest().authenticated())
